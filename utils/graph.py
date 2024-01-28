@@ -5,7 +5,7 @@ for searching for a Hamiltonian cycle
 """
 
 from __future__ import annotations
-from typing import Any, List
+from typing import Any, Iterable, Tuple
 from queue import Queue
 from random import choice
 
@@ -21,7 +21,7 @@ class Graph:
             self.edges = set()
             self.parents = {}
 
-        def __ne__(self, other: Node) -> bool:
+        def __ne__(self, other) -> bool:
             if not isinstance(other, type(self)):
                 return True
 
@@ -37,7 +37,7 @@ class Graph:
             return hash(self.value)
 
         def __repr__(self) -> str:
-            return f"<Node: {self.value=}>"
+            return f"<Node: value={self.value}>"
 
     class Edge:
         """edge class storing the incident node"""
@@ -50,9 +50,9 @@ class Graph:
             return self.weight < other.weight
 
         def __repr__(self):
-            return f"<Edge: {self.weight=}, {self.incident_node=}>"
+            return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
-    def __init__(self, data_input: List[Any, Any, int]):
+    def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]):
         self.graph = {}
         self.n_vertex = 0
 
@@ -74,14 +74,13 @@ class Graph:
 
         return self.graph[value]
 
-    def traverse(self, *, how="dfs") -> None:
+    def traverse(self, *, how: str = "dfs") -> None:
         """
-        wrapper for traversing all nodes of the graph
-
+        wrapper for traversing all nodes of the graph.
         :type how: str
-        :values how: 'bfs', 'dfs', 'rdfs'
+        :values how: `bfs`, `dfs`, `rdfs`
         """
-
+        how = how.lower()
         if how == "bfs":
             traverse_ = self._bfs
         elif how == "dfs":
@@ -96,7 +95,8 @@ class Graph:
             if node not in passed:
                 traverse_(node, passed)
 
-    def _bfs(self, node: Node, passed: set) -> None:
+    @staticmethod
+    def _bfs(node: Node, passed: set) -> None:
         """breadth-first traversal with queue"""
 
         queue = Queue()
@@ -110,7 +110,8 @@ class Graph:
                     queue.put(edge.incident_node)
                     passed.add(edge.incident_node)
 
-    def _dfs_without_recur(self, node: Node, passed: set) -> None:
+    @staticmethod
+    def _dfs_without_recur(node: Node, passed: set) -> None:
         """depth-first traversal without recursion"""
 
         stack = [node]
@@ -154,7 +155,8 @@ class Graph:
 
         return True
 
-    def _weight_between_nodes(self, node: Node, adjacent_node: Node) -> int:
+    @staticmethod
+    def _weight_between_nodes(node: Node, adjacent_node: Node) -> int:
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
@@ -165,7 +167,8 @@ class Graph:
 
         raise ValueError("nodes are not adjacent")
 
-    def _nearest_not_passed_node(self, node: Node, passed: set) -> Node:
+    @staticmethod
+    def _nearest_not_passed_node(node: Node, passed: set) -> Node:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = filter(
@@ -176,11 +179,14 @@ class Graph:
 
         return edge_to_nearest_node.incident_node
 
-    def find_hamiltonian_cycle(self, *, start_node=None) -> int:
+    def find_hamiltonian_cycle(self, *, start_node=None) -> dict:
         """finds a suboptimal Hamiltonian cycle"""
 
         if not self._ore_theorem():
-            return 0
+            return {
+                "route": "",
+                "distance": 0
+            }
 
         if start_node is None:
             start_node = choice(list(self.graph.values()))
@@ -201,5 +207,7 @@ class Graph:
 
         route += f" -> {start_node}"
         route_len += self._weight_between_nodes(start_node, cur_node)
-        print(route)
-        return route_len
+        return {
+            "route": route,
+            "distance": route_len
+        }
