@@ -5,7 +5,7 @@ for searching for a Hamiltonian cycle
 """
 
 from __future__ import annotations
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Tuple, Set
 from queue import Queue
 from random import choice
 
@@ -16,7 +16,7 @@ class Graph:
     class Node:
         """node class storing node value and incident edges"""
 
-        def __init__(self, value: Any):
+        def __init__(self, value: Any) -> None:
             self.value = value
             self.edges = set()
             self.parents = {}
@@ -42,7 +42,7 @@ class Graph:
     class Edge:
         """edge class storing the incident node"""
 
-        def __init__(self, incident_node, weight: int):
+        def __init__(self, incident_node, weight: int) -> None:
             self.incident_node = incident_node
             self.weight = weight
 
@@ -52,7 +52,7 @@ class Graph:
         def __repr__(self):
             return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
-    def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]):
+    def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]) -> None:
         self.graph = {}
         self.n_vertex = 0
 
@@ -77,8 +77,7 @@ class Graph:
     def traverse(self, *, how: str = "dfs") -> None:
         """
         wrapper for traversing all nodes of the graph.
-        :type how: str
-        :values how: `bfs`, `dfs`, `rdfs`
+        :param how: graph traversal algorithm, values: ``bfs``, ``dfs`` or ``rdfs``
         """
         how = how.lower()
         if how == "bfs":
@@ -96,7 +95,7 @@ class Graph:
                 traverse_(node, passed)
 
     @staticmethod
-    def _bfs(node: Node, passed: set) -> None:
+    def _bfs(node: Node, passed: Set[Node]) -> None:
         """breadth-first traversal with queue"""
 
         queue = Queue()
@@ -111,7 +110,7 @@ class Graph:
                     passed.add(edge.incident_node)
 
     @staticmethod
-    def _dfs_without_recur(node: Node, passed: set) -> None:
+    def _dfs_without_recur(node: Node, passed: Set[Node]) -> None:
         """depth-first traversal without recursion"""
 
         stack = [node]
@@ -129,7 +128,7 @@ class Graph:
             if not has_children:
                 stack.pop()
 
-    def _dfs_with_recur(self, node: Node, passed: set) -> None:
+    def _dfs_with_recur(self, node: Node, passed: Set[Node]) -> None:
         """depth-first traversal with recursion"""
 
         print(node.value)
@@ -179,16 +178,15 @@ class Graph:
 
         return edge_to_nearest_node.incident_node
 
-    def find_hamiltonian_cycle(self, *, start_node=None) -> (str, dict):
+    def find_hamiltonian_cycle(self, *, start_node: Node = None) -> (str, dict):
         """finds a suboptimal Hamiltonian cycle"""
         data = {
             "route": [],
-            "distance": 0
+            "total duration": 0
         }
         if not self._ore_theorem():
             msg = "There is no way"
-
-            return msg, None
+            return msg, data
 
         if start_node is None:
             start_node = choice(list(self.graph.values()))
@@ -199,17 +197,16 @@ class Graph:
         })
 
         cur_node = start_node
-        passed = set()
-        passed.add(cur_node)
+        passed = {cur_node}
 
-        while len(passed) != self.n_vertex:
+        while len(passed) < self.n_vertex:
             nearest_node = self._nearest_not_passed_node(cur_node, passed)
             duration = self._weight_between_nodes(nearest_node, cur_node)
             data["route"].append({
                 "node": f"{nearest_node}",
                 "duration": duration
             })
-            data["distance"] += duration
+            data["total duration"] += duration
             passed.add(nearest_node)
             cur_node = nearest_node
 
@@ -218,7 +215,7 @@ class Graph:
             "node": f"{start_node}",
             "duration": duration
         })
-        data["distance"] += duration
+        data["total duration"] += duration
         msg = "The shortest path has been successfully found"
 
         return msg, data

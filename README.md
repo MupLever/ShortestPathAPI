@@ -3,7 +3,7 @@
 API server that returns the optimal Hamiltonian cycle (chain).
 
 ### Endpoints
-`/api/v1/shortest_path/`
+`/api/v1/shortest_path/` - endpoint for getting the shortest path in the complete graph
 
 ### Required request format
 
@@ -36,6 +36,34 @@ API server that returns the optimal Hamiltonian cycle (chain).
 ]
 ```
 
+### Response format
+
+```json
+{
+  "message": "The shortest path has been successfully found",
+  "shortest_path": {
+    "route": [
+      {
+        "node": "Moscow, Vladimirskya, 24, 130",
+        "duration": 0
+      },
+      {
+        "node": "Irkutsk, Deputatskya, 7, 80",
+        "duration": 37
+      },
+      {
+        "node": "ST, Lenina, 114, 2007",
+        "duration": 75
+      },
+      {
+        "node": "Moscow, Vladimirskya, 24, 130",
+        "duration": 97
+      }
+    ],
+    "total duration": 209
+  }
+}
+```
 ### Version
 python3.8.10
 
