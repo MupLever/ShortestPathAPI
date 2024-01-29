@@ -11,29 +11,6 @@ from utils.graph import Graph
 app = FastAPI(title="Shortest Path API", version="1.0.0", description="")
 
 
-# schemas
-# class LegalAddress(BaseModel):
-#     city
-#     street
-#     house_number
-#     apartment_number: int
-#     entrance_number: int
-#     floor: int
-#     latitude
-#     longitude
-#
-# class Path:
-#     metadata
-#     id
-#     duration
-#     distance
-#
-# class PathLegalAddress:
-#     index
-#     path_id
-#     legal_address_id
-
-
 class LegalAddress(BaseModel):
     city: str
     street: str
@@ -93,7 +70,11 @@ async def get_shortest_path(legal_addresses: List[LegalAddress]):
             data.append(edge)
 
     graph = Graph(data)
-    return {"shortest_path": graph.find_hamiltonian_cycle()}
+    msg, data = graph.find_hamiltonian_cycle()
+    return {
+        "message": msg,
+        "shortest_path": data
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

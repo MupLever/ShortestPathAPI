@@ -37,7 +37,7 @@ class Graph:
             return hash(self.value)
 
         def __repr__(self) -> str:
-            return f"<Node: value={self.value}>"
+            return f"{self.value}"
 
     class Edge:
         """edge class storing the incident node"""
@@ -179,20 +179,24 @@ class Graph:
 
         return edge_to_nearest_node.incident_node
 
-    def find_hamiltonian_cycle(self, *, start_node=None) -> dict:
+    def find_hamiltonian_cycle(self, *, start_node=None) -> (str, dict):
         """finds a suboptimal Hamiltonian cycle"""
-
+        data = {
+            "route": [],
+            "distance": 0
+        }
         if not self._ore_theorem():
-            return {
-                "route": "",
-                "distance": 0
-            }
+            msg = "There is no way"
+
+            return msg, None
 
         if start_node is None:
             start_node = choice(list(self.graph.values()))
 
-        route = f"{start_node}"
-        route_len = 0
+        data["route"].append({
+            "node": f"{start_node}",
+            "duration": 0
+        })
 
         cur_node = start_node
         passed = set()
@@ -200,14 +204,21 @@ class Graph:
 
         while len(passed) != self.n_vertex:
             nearest_node = self._nearest_not_passed_node(cur_node, passed)
-            route_len += self._weight_between_nodes(nearest_node, cur_node)
-            route += f" -> {nearest_node}"
+            duration = self._weight_between_nodes(nearest_node, cur_node)
+            data["route"].append({
+                "node": f"{nearest_node}",
+                "duration": duration
+            })
+            data["distance"] += duration
             passed.add(nearest_node)
             cur_node = nearest_node
 
-        route += f" -> {start_node}"
-        route_len += self._weight_between_nodes(start_node, cur_node)
-        return {
-            "route": route,
-            "distance": route_len
-        }
+        duration = self._weight_between_nodes(start_node, cur_node)
+        data["route"].append({
+            "node": f"{start_node}",
+            "duration": duration
+        })
+        data["distance"] += duration
+        msg = "The shortest path has been successfully found"
+
+        return msg, data
