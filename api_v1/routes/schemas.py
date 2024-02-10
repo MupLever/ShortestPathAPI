@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -23,3 +24,10 @@ class LegalAddressBase(BaseModel):
 
 class LegalAddress(LegalAddressBase):
     pass
+
+
+class LegalAddressesCreate(LegalAddressBase):
+    id: int
+    deleted: bool
+    created_at: datetime
+    updated_at: datetime

@@ -3,7 +3,7 @@ import uvicorn
 
 from fastapi import FastAPI
 
-from api_v1.views import router as router
+from api_v1.routes.views import router as router
 
 
 app = FastAPI(title="Shortest Path API", version="1.0.0")

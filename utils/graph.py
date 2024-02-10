@@ -18,13 +18,13 @@ class Node:
         self.edges = set()
         self.parents = {}
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: Node) -> bool:
         if not isinstance(other, type(self)):
             return True
 
         return self.value != other.value
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Node) -> bool:
         if not isinstance(other, type(self)):
             return False
 
@@ -40,23 +40,34 @@ class Node:
 class Edge:
     """edge class storing the incident node"""
 
-    def __init__(self, incident_node, weight: int) -> None:
+    def __init__(self, incident_node: Node, weight: int) -> None:
         self.incident_node = incident_node
         self.weight = weight
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: Edge) -> bool:
         return self.weight < other.weight
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
 
 class GraphBase:
     def add_or_get_node(self, value: Any) -> Node:
-        pass
+        raise NotImplementedError
 
     def traverse(self, *, how: str) -> None:
-        pass
+        raise NotImplementedError
+
+
+class MatrixGraph(GraphBase):
+    def __init__(self):
+        raise NotImplementedError
+
+    def add_or_get_node(self, value: Any) -> Node:
+        raise NotImplementedError
+
+    def traverse(self, *, how: str) -> None:
+        raise NotImplementedError
 
 
 class HashTableGraph(GraphBase):
@@ -83,6 +94,27 @@ class HashTableGraph(GraphBase):
             self.n_vertex += 1
 
         return self.graph[value]
+
+    def delete_node(self, value: Any) -> None:
+        raise NotImplementedError
+
+    def delete_edge(self, value_from: Any, value_to: Any) -> None:
+        """
+        :param value_from:
+        :param value_to:
+        """
+        if value_from not in self.graph:
+            raise KeyError(f"the graph does not contain vertices with the value={value_from}")
+
+        if value_to not in self.graph:
+            raise KeyError(f"the graph does not contain vertices with the value={value_from}")
+
+        node_from = self.graph[value_from]
+        node_to = self.graph[value_to]
+
+        edge = node_to.parents[node_from]
+        node_from.edges.remove(edge)
+        node_to.parents.pop(node_from)
 
     def traverse(self, *, how: str = "dfs") -> None:
         """
@@ -174,12 +206,12 @@ class HamiltonianGraph(HashTableGraph):
             return node.parents[adjacent_node].weight
 
         if node in adjacent_node.parents:
-            return node.parents[node].weight
+            return adjacent_node.parents[node].weight
 
         raise ValueError("nodes are not adjacent")
 
     @staticmethod
-    def _get_nearest_not_passed_node(node: Node, passed: set) -> Node:
+    def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Node:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = filter(
@@ -190,8 +222,11 @@ class HamiltonianGraph(HashTableGraph):
 
         return edge_to_nearest_node.incident_node
 
-    def find_hamiltonian_cycle(self, *, start_node: Node = None) -> (str, dict):
+    def find_hamiltonian_cycle(
+            self, *, start_value: Any = None, accuracy: int = 0
+    ) -> (str, dict):
         """finds a suboptimal Hamiltonian cycle"""
+
         data = {
             "route": [],
             "total duration": 0
@@ -200,8 +235,12 @@ class HamiltonianGraph(HashTableGraph):
             msg = "There is no way"
             return msg, data
 
-        if start_node is None:
+        if start_value is None:
             start_node = choice(list(self.graph.values()))
+        elif start_value in self.graph:
+            start_node = self.graph[start_value]
+        else:
+            raise KeyError(f"The graph does not contain vertices with this value={start_value}")
 
         data["route"].append({
             "node": f"{start_node}",

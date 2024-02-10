@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter
 from requests import request
 
-from api_v1.schemas import LegalAddress
+from api_v1.routes.schemas import LegalAddress
 from utils.graph import HamiltonianGraph
 
 router = APIRouter(tags=["ShortestPath"], prefix="/api/v1/shortest_path/routes")
