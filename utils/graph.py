@@ -10,47 +10,57 @@ from queue import Queue
 from random import choice
 
 
-class Graph:
+class Node:
+    """node class storing node value and incident edges"""
+
+    def __init__(self, value: Any) -> None:
+        self.value = value
+        self.edges = set()
+        self.parents = {}
+
+    def __ne__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return True
+
+        return self.value != other.value
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        return self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"{self.value}"
+
+
+class Edge:
+    """edge class storing the incident node"""
+
+    def __init__(self, incident_node, weight: int) -> None:
+        self.incident_node = incident_node
+        self.weight = weight
+
+    def __lt__(self, other) -> bool:
+        return self.weight < other.weight
+
+    def __repr__(self):
+        return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
+
+
+class GraphBase:
+    def add_or_get_node(self, value: Any) -> Node:
+        pass
+
+    def traverse(self, *, how: str) -> None:
+        pass
+
+
+class HashTableGraph(GraphBase):
     """an undirected graph class implemented through a dictionary"""
-
-    class Node:
-        """node class storing node value and incident edges"""
-
-        def __init__(self, value: Any) -> None:
-            self.value = value
-            self.edges = set()
-            self.parents = {}
-
-        def __ne__(self, other) -> bool:
-            if not isinstance(other, type(self)):
-                return True
-
-            return self.value != other.value
-
-        def __eq__(self, other) -> bool:
-            if not isinstance(other, type(self)):
-                return False
-
-            return self.value == other.value
-
-        def __hash__(self) -> int:
-            return hash(self.value)
-
-        def __repr__(self) -> str:
-            return f"{self.value}"
-
-    class Edge:
-        """edge class storing the incident node"""
-
-        def __init__(self, incident_node, weight: int) -> None:
-            self.incident_node = incident_node
-            self.weight = weight
-
-        def __lt__(self, other) -> bool:
-            return self.weight < other.weight
-
-        def __repr__(self):
-            return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
     def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]) -> None:
         self.graph = {}
@@ -60,7 +70,7 @@ class Graph:
             node = self.add_or_get_node(from_)
             incident_node = self.add_or_get_node(to_)
 
-            edge = self.Edge(incident_node, weight)
+            edge = Edge(incident_node, weight)
 
             node.edges.add(edge)
             incident_node.parents[node] = edge
@@ -69,7 +79,7 @@ class Graph:
         """adding and returning a node"""
 
         if value not in self.graph:
-            self.graph[value] = self.Node(value)
+            self.graph[value] = Node(value)
             self.n_vertex += 1
 
         return self.graph[value]
@@ -137,6 +147,8 @@ class Graph:
             if edge.incident_node not in passed:
                 self._dfs_with_recur(edge.incident_node, passed)
 
+
+class HamiltonianGraph(HashTableGraph):
     def _ore_theorem(self) -> bool:
         """verifies Ore's theorem"""
 
@@ -155,7 +167,7 @@ class Graph:
         return True
 
     @staticmethod
-    def _weight_between_nodes(node: Node, adjacent_node: Node) -> int:
+    def _get_weight_between_nodes(node: Node, adjacent_node: Node) -> int:
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
@@ -167,7 +179,7 @@ class Graph:
         raise ValueError("nodes are not adjacent")
 
     @staticmethod
-    def _nearest_not_passed_node(node: Node, passed: set) -> Node:
+    def _get_nearest_not_passed_node(node: Node, passed: set) -> Node:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = filter(
@@ -200,8 +212,8 @@ class Graph:
         passed = {cur_node}
 
         while len(passed) < self.n_vertex:
-            nearest_node = self._nearest_not_passed_node(cur_node, passed)
-            duration = self._weight_between_nodes(nearest_node, cur_node)
+            nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
+            duration = self._get_weight_between_nodes(nearest_node, cur_node)
             data["route"].append({
                 "node": f"{nearest_node}",
                 "duration": duration
@@ -210,7 +222,7 @@ class Graph:
             passed.add(nearest_node)
             cur_node = nearest_node
 
-        duration = self._weight_between_nodes(start_node, cur_node)
+        duration = self._get_weight_between_nodes(start_node, cur_node)
         data["route"].append({
             "node": f"{start_node}",
             "duration": duration
