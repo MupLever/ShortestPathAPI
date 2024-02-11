@@ -1,5 +1,4 @@
 import uvicorn
-# import networkx as nx
 
 from fastapi import FastAPI
 

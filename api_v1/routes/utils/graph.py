@@ -52,6 +52,8 @@ class Edge:
 
 
 class GraphBase:
+    """"""
+
     def add_or_get_node(self, value: Any) -> Node:
         raise NotImplementedError
 
@@ -60,6 +62,8 @@ class GraphBase:
 
 
 class MatrixGraph(GraphBase):
+    """"""
+
     def __init__(self):
         raise NotImplementedError
 
@@ -71,7 +75,7 @@ class MatrixGraph(GraphBase):
 
 
 class HashTableGraph(GraphBase):
-    """an undirected graph class implemented through a dictionary"""
+    """a directed graph class implemented through a dictionary"""
 
     def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]) -> None:
         self.graph = {}
@@ -99,15 +103,15 @@ class HashTableGraph(GraphBase):
         raise NotImplementedError
 
     def delete_edge(self, value_from: Any, value_to: Any) -> None:
-        """
-        :param value_from:
-        :param value_to:
-        """
         if value_from not in self.graph:
-            raise KeyError(f"the graph does not contain vertices with the value={value_from}")
+            raise KeyError(
+                f"the graph does not contain vertices with the value={value_from}"
+            )
 
         if value_to not in self.graph:
-            raise KeyError(f"the graph does not contain vertices with the value={value_from}")
+            raise KeyError(
+                f"the graph does not contain vertices with the value={value_from}"
+            )
 
         node_from = self.graph[value_from]
         node_to = self.graph[value_to]
@@ -189,10 +193,12 @@ class HamiltonianGraph(HashTableGraph):
 
         for node1 in self.graph.values():
             for node2 in self.graph.values():
-                if node1 != node2 and \
-                    node2 not in node1.parents and \
-                    node1 not in node2.parents and \
-                        len(node1.edges) + len(node2.edges) < self.n_vertex:
+                if (
+                    node1 != node2
+                    and node2 not in node1.parents
+                    and node1 not in node2.parents
+                    and len(node1.edges) + len(node2.edges) < self.n_vertex
+                ):
 
                     return False
 
@@ -208,31 +214,28 @@ class HamiltonianGraph(HashTableGraph):
         if node in adjacent_node.parents:
             return adjacent_node.parents[node].weight
 
-        raise ValueError("nodes are not adjacent")
+        raise ValueError("nodes aren't adjacent")
 
     @staticmethod
     def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Node:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = filter(
-            lambda edge: edge.incident_node not in passed,
-            node.edges)
+            lambda edge: edge.incident_node not in passed, node.edges
+        )
 
         edge_to_nearest_node = min(edges_to_not_passed_nodes)
 
         return edge_to_nearest_node.incident_node
 
     def find_hamiltonian_cycle(
-            self, *, start_value: Any = None, accuracy: int = 0
+        self, *, start_value: Any = None, accuracy: int = 0
     ) -> (str, dict):
         """finds a suboptimal Hamiltonian cycle"""
 
-        data = {
-            "route": [],
-            "total duration": 0
-        }
+        data = {"route": [], "total duration": 0}
         if not self._ore_theorem():
-            msg = "There is no way"
+            msg = "The Ore theorem doesn't hold"
             return msg, data
 
         if start_value is None:
@@ -240,12 +243,11 @@ class HamiltonianGraph(HashTableGraph):
         elif start_value in self.graph:
             start_node = self.graph[start_value]
         else:
-            raise KeyError(f"The graph does not contain vertices with this value={start_value}")
+            raise KeyError(
+                f"The graph doesn't contain vertices with this value={start_value}"
+            )
 
-        data["route"].append({
-            "node": f"{start_node}",
-            "duration": 0
-        })
+        data["route"].append({"address": f"{start_node}", "duration": 0})
 
         cur_node = start_node
         passed = {cur_node}
@@ -253,19 +255,13 @@ class HamiltonianGraph(HashTableGraph):
         while len(passed) < self.n_vertex:
             nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
             duration = self._get_weight_between_nodes(nearest_node, cur_node)
-            data["route"].append({
-                "node": f"{nearest_node}",
-                "duration": duration
-            })
+            data["route"].append({"address": f"{nearest_node}", "duration": duration})
             data["total duration"] += duration
             passed.add(nearest_node)
             cur_node = nearest_node
 
         duration = self._get_weight_between_nodes(start_node, cur_node)
-        data["route"].append({
-            "node": f"{start_node}",
-            "duration": duration
-        })
+        data["route"].append({"address": f"{start_node}", "duration": duration})
         data["total duration"] += duration
         msg = "The shortest path has been successfully found"
 

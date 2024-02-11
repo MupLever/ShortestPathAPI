@@ -1,4 +1,4 @@
-# schemas
+# tables
 class LegalAddress:
     city: str
     district: str

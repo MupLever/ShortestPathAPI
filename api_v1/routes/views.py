@@ -1,48 +1,49 @@
 from typing import List
 from fastapi import APIRouter
-from requests import request
 
 from api_v1.routes.schemas import LegalAddress
 from api_v1.routes.utils.graph import HamiltonianGraph
 from api_v1.routes.utils.subrequests import get_coordinates, get_distances
 
-router = APIRouter(tags=["ShortestPath"], prefix="/api/v1/shortest_path/routes")
+router = APIRouter(tags=["Routes"], prefix="/api/v1/shortest_path/routes")
 
-route_id: int = 1
+route_id: int = 0
 database: dict = {}
 
 
-@router.get("/")
+@router.get("/", description="Список маршрутов")
 async def get_routes():
-    return database
+    return list(database.values())
 
 
-@router.post("/")
+@router.post("/", description="Добавить маршрут")
 async def get_shortest_path(legal_addresses: List[LegalAddress]):
-    address_list = await get_coordinates(legal_addresses)
+    coordinates_list = await get_coordinates(legal_addresses)
 
-    data = await get_distances(legal_addresses, address_list)
+    data = await get_distances(legal_addresses, coordinates_list)
 
     graph = HamiltonianGraph(data)
     msg, data = graph.find_hamiltonian_cycle()
     global route_id
-    database[route_id] = data
     route_id += 1
-    return {"message": msg, "shortest_path": database[route_id - 1]}
+    data["id"] = route_id
+    database[route_id] = data
+
+    return {"message": msg, "shortest_path": database[route_id]}
 
 
-@router.delete("/{route_id}/")
+@router.delete("/{route_id}/", description="Удалить маршрут")
 async def delete_route(route_id: int):
     del database[route_id]
-    return database
+    return list(database.values())
 
 
-@router.get("/{route_id}/")
+@router.get("/{route_id}/", description="Получить маршрут по идентификатору")
 async def get_route(route_id: int):
     return database[route_id]
 
 
-@router.patch("/{route_id}/")
+@router.patch("/{route_id}/", description="Изменить маршрут")
 async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
     address_list = await get_coordinates(legal_addresses)
 

@@ -2,6 +2,11 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class Geocoordinates(BaseModel):
+    lat: int
+    lng: int
+
+
 class LegalAddressBase(BaseModel):
     city: str
     # district: str
@@ -17,9 +22,7 @@ class LegalAddressBase(BaseModel):
         )
 
     def __str__(self):
-        return (
-            f"{self.city}, {self.street}, {self.house_number}, {self.apartment_number}"
-        )
+        return self.__repr__()
 
 
 class LegalAddress(LegalAddressBase):
