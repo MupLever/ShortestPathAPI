@@ -3,76 +3,64 @@ from fastapi import APIRouter
 from requests import request
 
 from api_v1.routes.schemas import LegalAddress
-from utils.graph import HamiltonianGraph
+from api_v1.routes.utils.graph import HamiltonianGraph
+from api_v1.routes.utils.subrequests import get_coordinates, get_distances
 
 router = APIRouter(tags=["ShortestPath"], prefix="/api/v1/shortest_path/routes")
+
+route_id: int = 1
+database: dict = {}
 
 
 @router.get("/")
 async def get_routes():
-    pass
-
-
-@router.get("/{route_id}/")
-async def get_route(route_id: int):
-    pass
-
-
-@router.patch("/{route_id}/")
-async def update_route(route_id: int):
-    pass
-
-
-@router.delete("/{route_id}/")
-async def delete_route(route_id: int):
-    pass
+    return database
 
 
 @router.post("/")
 async def get_shortest_path(legal_addresses: List[LegalAddress]):
-    address_list = []
-    for legal_address in legal_addresses:
-        response = request(
-            url="http://localhost:8001/api/v1/geocoder/",
-            method="POST",
-            json=legal_address.model_dump(),
-        )
-        address_list.append(response.json().get("coordinates"))
+    address_list = await get_coordinates(legal_addresses)
 
-    data = []
-
-    for i in range(0, len(address_list)):
-        for j in range(i + 1, len(address_list)):
-            json_body = {
-                "first_address": {
-                    "latitude": address_list[i]["lat"],
-                    "longitude": address_list[i]["lng"],
-                },
-                "second_address": {
-                    "latitude": address_list[j]["lat"],
-                    "longitude": address_list[j]["lng"],
-                },
-            }
-            response = request(
-                method="POST",
-                url="http://localhost:8002/api/v1/distance_matrix/",
-                json=json_body,
-            )
-            distance = int(response.json().get("distance"))
-            edge = (
-                f"{legal_addresses[i]}",
-                f"{legal_addresses[j]}",
-                distance,
-            )
-            data.append(edge)
-
-            edge = (
-                f"{legal_addresses[j]}",
-                f"{legal_addresses[i]}",
-                distance,
-            )
-            data.append(edge)
+    data = await get_distances(legal_addresses, address_list)
 
     graph = HamiltonianGraph(data)
     msg, data = graph.find_hamiltonian_cycle()
-    return {"message": msg, "shortest_path": data}
+    global route_id
+    database[route_id] = data
+    route_id += 1
+    return {"message": msg, "shortest_path": database[route_id - 1]}
+
+
+@router.delete("/{route_id}/")
+async def delete_route(route_id: int):
+    del database[route_id]
+    return database
+
+
+@router.get("/{route_id}/")
+async def get_route(route_id: int):
+    return database[route_id]
+
+
+@router.patch("/{route_id}/")
+async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
+    address_list = await get_coordinates(legal_addresses)
+
+    data = await get_distances(legal_addresses, address_list)
+
+    graph = HamiltonianGraph(data)
+    msg, data = graph.find_hamiltonian_cycle()
+    database[route_id] = data
+    return {"message": msg, "shortest_path": database[route_id]}
+
+
+# @router.put("/{route_id}/")
+# async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
+#     address_list = await get_coordinates(legal_addresses)
+#
+#     data = await get_distances(legal_addresses, address_list)
+#
+#     graph = HamiltonianGraph(data)
+#     msg, data = graph.find_hamiltonian_cycle()
+#     database[route_id] = data
+#     return {"message": msg, "shortest_path": database[route_id]}
