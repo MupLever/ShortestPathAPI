@@ -26,15 +26,15 @@ async def get_shortest_path(legal_addresses: List[LegalAddress]):
     for from_, to_, weight in edges_list:
         graph.add_edge(from_, to_, weight)
 
-        status, edges_list = graph.get_hamiltonian_cycle()
+        status, data = graph.get_hamiltonian_cycle()
         if status == Status.OK:
             msg = "SUCCESS: The shortest path has been successfully found"
             break
 
     global route_id
     route_id += 1
-    edges_list["id"] = route_id
-    database[route_id] = edges_list
+    data["id"] = route_id
+    database[route_id] = data
     if status != Status.OK:
         msg = "The Ore theorem doesn't hold"
 
@@ -63,19 +63,19 @@ async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
     graph = HamiltonianGraph()
     for from_, to_, weight in edges_list:
         graph.add_edge(from_, to_, weight)
-        status, edges_list = graph.get_hamiltonian_cycle()
+        status, data = graph.get_hamiltonian_cycle()
         if status == Status.OK:
             msg = "SUCCESS: The shortest path has been successfully found"
             break
 
-    database[route_id] = edges_list
+    database[route_id] = data
     if status != Status.OK:
         msg = "The Ore theorem doesn't hold"
 
     return {"message": msg, "shortest_path": database[route_id]}
 
 
-# @router.put("/{route_id}/")
+# @router.patch("/{route_id}/")
 # async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
 #     address_list = get_coordinates(legal_addresses)
 #
