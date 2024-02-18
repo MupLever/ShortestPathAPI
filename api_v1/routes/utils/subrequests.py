@@ -5,7 +5,7 @@ from requests import request
 from api_v1.routes.schemas import LegalAddress, Geocoordinates
 
 
-async def get_coordinates(legal_addresses: List[LegalAddress]) -> List[Geocoordinates]:
+def get_coordinates(legal_addresses: List[LegalAddress]) -> List[Geocoordinates]:
     coordinates_list = []
     for legal_address in legal_addresses:
         response = request(
@@ -18,10 +18,10 @@ async def get_coordinates(legal_addresses: List[LegalAddress]) -> List[Geocoordi
     return coordinates_list
 
 
-async def get_distances(
+def get_distances(
     legal_addresses: List[LegalAddress], coordinates_list: List[Geocoordinates]
 ) -> List[Tuple[str, str, int]]:
-    data = []
+    edges_list = []
 
     for i in range(0, len(coordinates_list)):
         for j in range(i + 1, len(coordinates_list)):
@@ -33,19 +33,19 @@ async def get_distances(
                     "destination": {**coordinates_list[j]},
                 },
             )
-            duration = int(response.json().get("duration"))
+            duration = response.json().get("duration")
             edge = (
                 f"{legal_addresses[i]}",
                 f"{legal_addresses[j]}",
                 duration,
             )
-            data.append(edge)
+            edges_list.append(edge)
 
             edge = (
                 f"{legal_addresses[j]}",
                 f"{legal_addresses[i]}",
                 duration,
             )
-            data.append(edge)
+            edges_list.append(edge)
 
-    return data
+    return edges_list

@@ -6,3 +6,6 @@ __pycache__
 
 # Ignore enviroment file
 .env
+
+# Ignore python venv
+venv

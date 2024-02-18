@@ -5,9 +5,15 @@ for searching for a Hamiltonian cycle
 """
 
 from __future__ import annotations
-from typing import Any, Iterable, Tuple, Set
+from abc import ABC
+from typing import Any, Iterable, Tuple, Set, Optional
 from queue import Queue
 from random import choice
+
+
+class Status:
+    OK: int = 0
+    ERROR: int = 1
 
 
 class Node:
@@ -51,44 +57,61 @@ class Edge:
         return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
 
-class GraphBase:
+class GraphBase(ABC):
     """"""
 
     def add_or_get_node(self, value: Any) -> Node:
         raise NotImplementedError
 
-    def traverse(self, *, how: str) -> None:
+    def add_edge(self, value_from, value_to, weight) -> None:
+        raise NotImplementedError
+
+    def traverse(self) -> None:
         raise NotImplementedError
 
 
 class MatrixGraph(GraphBase):
     """"""
 
-    def __init__(self):
-        raise NotImplementedError
+    def __init__(self) -> None:
+        self.n_vertex = 0
+        self.matrix = []
+        self.graph = {}
 
-    def add_or_get_node(self, value: Any) -> Node:
-        raise NotImplementedError
+    def add_or_get_node(self, value: Any) -> int:
+        if value not in self.graph:
+            self.n_vertex += 1
+            for row in self.matrix:
+                row.append(0)
 
-    def traverse(self, *, how: str) -> None:
-        raise NotImplementedError
+            self.graph[value] = self.n_vertex - 1
+            self.matrix.append([0 for _ in range(self.n_vertex)])
+                    
+        return self.graph[value]
+    
+    def add_edge(self, value_from: Any, value_to: Any, weight: float) -> None:
+        node_from = self.add_or_get_node(value_from)
+        node_to = self.add_or_get_node(value_to)
+        self.matrix[node_from][node_to] = weight
+
+    def traverse(self) -> None:
+        # print(list(self.graph.keys()))
+        for row in self.matrix:
+            print(row, end="\n")
 
 
 class HashTableGraph(GraphBase):
     """a directed graph class implemented through a dictionary"""
 
-    def __init__(self, data_input: Iterable[Tuple[Any, Any, int]]) -> None:
+    def __init__(self) -> None:
         self.graph = {}
         self.n_vertex = 0
 
-        for from_, to_, weight in data_input:
-            node = self.add_or_get_node(from_)
-            incident_node = self.add_or_get_node(to_)
-
-            edge = Edge(incident_node, weight)
-
-            node.edges.add(edge)
-            incident_node.parents[node] = edge
+    def add_from_edges_list(self, edges_list: Iterable[Tuple[Any, Any, int]]) -> None:
+        for from_, to_, weight in edges_list:
+            self.add_or_get_node(from_)
+            self.add_or_get_node(to_)
+            self.add_edge(from_, to_, weight)
 
     def add_or_get_node(self, value: Any) -> Node:
         """adding and returning a node"""
@@ -98,6 +121,14 @@ class HashTableGraph(GraphBase):
             self.n_vertex += 1
 
         return self.graph[value]
+
+    def add_edge(self, value_from: Any, value_to: Any, weight: float) -> None:
+        node_from = self.add_or_get_node(value_from)
+        node_to = self.add_or_get_node(value_to)
+
+        edge = Edge(node_to, weight)
+        node_from.edges.add(edge)
+        node_to.parents[node_from] = edge
 
     def delete_node(self, value: Any) -> None:
         raise NotImplementedError
@@ -110,7 +141,7 @@ class HashTableGraph(GraphBase):
 
         if value_to not in self.graph:
             raise KeyError(
-                f"the graph does not contain vertices with the value={value_from}"
+                f"the graph does not contain vertices with the value={value_to}"
             )
 
         node_from = self.graph[value_from]
@@ -205,7 +236,7 @@ class HamiltonianGraph(HashTableGraph):
         return True
 
     @staticmethod
-    def _get_weight_between_nodes(node: Node, adjacent_node: Node) -> int:
+    def _get_weight_between(node: Node, adjacent_node: Node) -> int:
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
@@ -217,7 +248,7 @@ class HamiltonianGraph(HashTableGraph):
         raise ValueError("nodes aren't adjacent")
 
     @staticmethod
-    def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Node:
+    def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Optional[Node]:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = filter(
@@ -228,15 +259,12 @@ class HamiltonianGraph(HashTableGraph):
 
         return edge_to_nearest_node.incident_node
 
-    def find_hamiltonian_cycle(
-        self, *, start_value: Any = None, accuracy: int = 0
-    ) -> (str, dict):
+    def get_hamiltonian_cycle(self, *, start_value: Any = None) -> (int, dict):
         """finds a suboptimal Hamiltonian cycle"""
 
         data = {"route": [], "total duration": 0}
         if not self._ore_theorem():
-            msg = "The Ore theorem doesn't hold"
-            return msg, data
+            return Status.ERROR, data
 
         if start_value is None:
             start_node = choice(list(self.graph.values()))
@@ -251,18 +279,23 @@ class HamiltonianGraph(HashTableGraph):
 
         cur_node = start_node
         passed = {cur_node}
+        try:
+            while len(passed) < self.n_vertex:
+                nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
+                duration = self._get_weight_between(cur_node, nearest_node)
 
-        while len(passed) < self.n_vertex:
-            nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
-            duration = self._get_weight_between_nodes(nearest_node, cur_node)
-            data["route"].append({"address": f"{nearest_node}", "duration": duration})
-            data["total duration"] += duration
-            passed.add(nearest_node)
-            cur_node = nearest_node
+                data["route"].append(
+                    {"address": f"{nearest_node}", "duration": duration}
+                )
+                data["total duration"] += duration
+                passed.add(nearest_node)
+                cur_node = nearest_node
 
-        duration = self._get_weight_between_nodes(start_node, cur_node)
+            duration = self._get_weight_between(start_node, cur_node)
+        except:
+            return Status.ERROR, {"route": [], "total duration": 0}
+
         data["route"].append({"address": f"{start_node}", "duration": duration})
         data["total duration"] += duration
-        msg = "The shortest path has been successfully found"
 
-        return msg, data
+        return Status.OK, data
