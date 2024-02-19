@@ -86,9 +86,9 @@ class MatrixGraph(GraphBase):
 
             self.graph[value] = self.n_vertex - 1
             self.matrix.append([0 for _ in range(self.n_vertex)])
-                    
+
         return self.graph[value]
-    
+
     def add_edge(self, value_from: Any, value_to: Any, weight: float) -> None:
         node_from = self.add_or_get_node(value_from)
         node_to = self.add_or_get_node(value_to)
@@ -292,7 +292,7 @@ class HamiltonianGraph(HashTableGraph):
                 cur_node = nearest_node
 
             duration = self._get_weight_between(start_node, cur_node)
-        except:
+        except ValueError:
             return Status.ERROR, {"route": [], "total duration": 0}
 
         data["route"].append({"address": f"{start_node}", "duration": duration})
