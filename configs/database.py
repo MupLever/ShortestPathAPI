@@ -1,7 +1,5 @@
-
-import asyncio
-from sqlalchemy import URL, create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import URL, create_engine
+from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from settings import settings
@@ -20,13 +18,19 @@ async_engine = create_async_engine(
     max_overflow=10,
 )
 
-with engine.connect() as conn:
-    res = conn.execute(text("SELECT VERSION()"))
-    print(f"{res.first()=}")
+session_factory = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    expire_on_commit=False,
 
-async def get_version():
-    async with async_engine.connect() as conn:
-        res = await conn.execute(text("SELECT VERSION()"))
-        print(f"{res.first()=}")
+)
 
-asyncio.get_event_loop().run_until_complete(get_version())
+async_session_factory = async_sessionmaker(
+    bind=async_engine,
+    autoflush=False,
+    expire_on_commit=False,
+)
+
+
+class Base(DeclarativeBase):
+    pass

@@ -44,19 +44,19 @@ API server that returns the optimal Hamiltonian cycle (chain).
   "shortest_path": {
     "route": [
       {
-        "node": "Moscow, Vladimirskya, 24, 130",
+        "address": "Moscow, Vladimirskya, 24, 130",
         "duration": 0
       },
       {
-        "node": "Irkutsk, Deputatskya, 7, 80",
+        "address": "Irkutsk, Deputatskya, 7, 80",
         "duration": 37
       },
       {
-        "node": "ST, Lenina, 114, 2007",
+        "address": "ST, Lenina, 114, 2007",
         "duration": 75
       },
       {
-        "node": "Moscow, Vladimirskya, 24, 130",
+        "address": "Moscow, Vladimirskya, 24, 130",
         "duration": 97
       }
     ],

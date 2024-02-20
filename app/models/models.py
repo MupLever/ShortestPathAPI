@@ -1,4 +1,5 @@
 from pydantic import EmailStr
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import (
     MetaData,
     Table,
@@ -10,6 +11,45 @@ from sqlalchemy import (
     TIMESTAMP,
     ForeignKey,
 )
+
+from configs.database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[EmailStr] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+
+
+class Address(Base):
+    __tablename__ = "addresses"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    city: Mapped[str] = mapped_column(nullable=False)
+    district: Mapped[str] = mapped_column()
+    street: Mapped[str] = mapped_column(nullable=False)
+    house_number: Mapped[str] = mapped_column(nullable=False)
+    apartment_number: Mapped[str] = mapped_column()
+    entrance_number: Mapped[int] = mapped_column()
+    floor: Mapped[int] = mapped_column()
+    latitude: Mapped[float] = mapped_column()
+    longitude: Mapped[float] = mapped_column()
+
+
+class Item(Base):
+    __tablename__ = "items"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
+
+class Route(Base):
+    __tablename__ = "routes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    total_duration: Mapped[int] = mapped_column(nullable=False)
+    path: Mapped[dict] = mapped_column(nullable=False)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
+
 
 metadata = MetaData()
 

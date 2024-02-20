@@ -236,7 +236,7 @@ class HamiltonianGraph(HashTableGraph):
         return True
 
     @staticmethod
-    def _get_weight_between(node: Node, adjacent_node: Node) -> int:
+    def _get_weight_between(node: Node, adjacent_node: Node) -> Optional[int]:
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
@@ -245,15 +245,18 @@ class HamiltonianGraph(HashTableGraph):
         if node in adjacent_node.parents:
             return adjacent_node.parents[node].weight
 
-        raise ValueError("nodes aren't adjacent")
+        return None
 
     @staticmethod
     def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Optional[Node]:
         """returns the nearest unmarked node"""
 
-        edges_to_not_passed_nodes = filter(
+        edges_to_not_passed_nodes = list(filter(
             lambda edge: edge.incident_node not in passed, node.edges
-        )
+        ))
+
+        if not edges_to_not_passed_nodes:
+            return None
 
         edge_to_nearest_node = min(edges_to_not_passed_nodes)
 
@@ -279,20 +282,25 @@ class HamiltonianGraph(HashTableGraph):
 
         cur_node = start_node
         passed = {cur_node}
-        try:
-            while len(passed) < self.n_vertex:
-                nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
-                duration = self._get_weight_between(cur_node, nearest_node)
 
-                data["route"].append(
-                    {"address": f"{nearest_node}", "duration": duration}
-                )
-                data["total duration"] += duration
-                passed.add(nearest_node)
-                cur_node = nearest_node
+        while len(passed) < self.n_vertex:
+            nearest_node = self._get_nearest_not_passed_node(cur_node, passed)
+            if nearest_node is None:
+                return Status.ERROR, {"route": [], "total duration": 0}
 
-            duration = self._get_weight_between(start_node, cur_node)
-        except ValueError:
+            duration = self._get_weight_between(cur_node, nearest_node)
+            if duration is None:
+                return Status.ERROR, {"route": [], "total duration": 0}
+
+            data["route"].append(
+                {"address": f"{nearest_node}", "duration": duration}
+            )
+            data["total duration"] += duration
+            passed.add(nearest_node)
+            cur_node = nearest_node
+
+        duration = self._get_weight_between(start_node, cur_node)
+        if duration is None:
             return Status.ERROR, {"route": [], "total duration": 0}
 
         data["route"].append({"address": f"{start_node}", "duration": duration})
