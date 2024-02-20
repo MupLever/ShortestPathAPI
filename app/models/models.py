@@ -1,6 +1,8 @@
 from datetime import datetime
-from pydantic import EmailStr
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import Any, Dict
+
+# from pydantic import EmailStr
+from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import (
     MetaData,
     text,
@@ -14,7 +16,9 @@ from sqlalchemy import (
     ForeignKey,
 )
 
-from configs.database import Base
+
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):
@@ -22,7 +26,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[EmailStr] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
@@ -72,7 +76,7 @@ class Route(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     total_duration: Mapped[int] = mapped_column(nullable=False)
-    path: Mapped[dict] = mapped_column(nullable=False)
+    path: Mapped[Dict[str, Any]] = mapped_column(type_=JSON, nullable=False)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
@@ -89,9 +93,9 @@ users = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("username", String, nullable=False),
-    Column("email", EmailStr, nullable=False),
+    Column("email", String, nullable=False),
     Column("password", String, nullable=False),
-    Column("created_at", server_default=text("TIMEZONE('utc', now())")),
+    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
         TIMESTAMP,
@@ -114,7 +118,7 @@ addresses = Table(
     Column("latitude", Float),
     Column("longitude", Float),
     Column("item_id", ForeignKey("items.id")),
-    Column("created_at", server_default=text("TIMEZONE('utc', now())")),
+    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
         TIMESTAMP,
@@ -128,7 +132,7 @@ items = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("user_id", ForeignKey("users.id")),
-    Column("created_at", server_default=text("TIMEZONE('utc', now())")),
+    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
         TIMESTAMP,
@@ -144,7 +148,7 @@ routes = Table(
     Column("total_duration", Integer, nullable=False),
     Column("path", JSON, nullable=False),
     Column("item_id", ForeignKey("items.id")),
-    Column("created_at", server_default=text("TIMEZONE('utc', now())")),
+    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
         TIMESTAMP,
