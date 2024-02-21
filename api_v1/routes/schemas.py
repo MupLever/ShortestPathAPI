@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -16,6 +15,9 @@ class LegalAddressBase(BaseModel):
     entrance_number: int
     floor: int
 
+    def __hash__(self):
+        return hash(f"{self.city}, {self.street}, {self.house_number}, {self.apartment_number}")
+
     def __repr__(self):
         return (
             f"{self.city}, {self.street}, {self.house_number}, {self.apartment_number}"
@@ -27,10 +29,8 @@ class LegalAddressBase(BaseModel):
 
 class LegalAddress(LegalAddressBase):
     pass
+    # id: int
 
 
 class LegalAddressesCreate(LegalAddressBase):
-    id: int
-    deleted: bool
-    created_at: datetime
-    updated_at: datetime
+    pass

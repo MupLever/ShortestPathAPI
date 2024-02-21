@@ -18,16 +18,9 @@ from sqlalchemy import (
 
 
 class Base(DeclarativeBase):
-    pass
-
-
-class User(Base):
-    __tablename__ = "users"
+    __abstract__ = True
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
     )
@@ -36,10 +29,17 @@ class User(Base):
     )
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    username: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+
+
 class Address(Base):
     __tablename__ = "addresses"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     city: Mapped[str] = mapped_column(nullable=False)
     district: Mapped[str] = mapped_column()
     street: Mapped[str] = mapped_column(nullable=False)
@@ -47,43 +47,31 @@ class Address(Base):
     apartment_number: Mapped[str] = mapped_column()
     entrance_number: Mapped[int] = mapped_column()
     floor: Mapped[int] = mapped_column()
+
+
+class Geocoordinates(Base):
+    __tablename__ = "geocoordinates"
+
     latitude: Mapped[float] = mapped_column()
     longitude: Mapped[float] = mapped_column()
-    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
-    created_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
+    address_id: Mapped[int] = mapped_column(
+        ForeignKey("addresses.id", ondelete="CASCADE")
     )
 
 
-class Item(Base):
-    __tablename__ = "items"
+class AddressRoute(Base):
+    __tablename__ = "address_route"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    created_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
-    )
+    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
+    route_id: Mapped[int] = mapped_column(ForeignKey("routes.id"))
 
 
 class Route(Base):
     __tablename__ = "routes"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     total_duration: Mapped[int] = mapped_column(nullable=False)
     path: Mapped[Dict[str, Any]] = mapped_column(type_=JSON, nullable=False)
-    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
-    created_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
 
 metadata = MetaData()
@@ -115,9 +103,6 @@ addresses = Table(
     Column("apartment_number", String),
     Column("entrance_number", Integer),
     Column("floor", Integer),
-    Column("latitude", Float),
-    Column("longitude", Float),
-    Column("item_id", ForeignKey("items.id")),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -127,11 +112,13 @@ addresses = Table(
     ),
 )
 
-items = Table(
-    "items",
+geocoordinates = Table(
+    "geocoordinates",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("user_id", ForeignKey("users.id")),
+    Column("latitude", Float),
+    Column("longitude", Float),
+    Column("address_id", ForeignKey("addresses.id")),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -147,7 +134,7 @@ routes = Table(
     Column("id", Integer, primary_key=True),
     Column("total_duration", Integer, nullable=False),
     Column("path", JSON, nullable=False),
-    Column("item_id", ForeignKey("items.id")),
+    Column("user_id", ForeignKey("users.id")),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -155,4 +142,11 @@ routes = Table(
         server_default=text("TIMEZONE('utc', now())"),
         onupdate=datetime.utcnow,
     ),
+)
+
+address_route = Table(
+    "address_route",
+    metadata,
+    Column("address_id", ForeignKey("addresses.id")),
+    Column("route_id", ForeignKey("routes.id")),
 )

@@ -19,9 +19,9 @@ async def get_routes():
 
 @router.post("/", description="Добавить маршрут")
 async def get_shortest_path(legal_addresses: List[LegalAddress]):
-    coordinates_list = external_api.get_coordinates(legal_addresses)
+    coordinates_dict = external_api.get_coordinates(legal_addresses)
 
-    edges_list = external_api.get_distances(legal_addresses, coordinates_list)
+    edges_list = external_api.get_distances(coordinates_dict)
 
     data = graph_api.get_min_hamiltonian_cycle(edges_list)
 
@@ -47,9 +47,9 @@ async def get_route(route_id: int):
 
 @router.put("/{route_id}/", description="Изменить маршрут")
 async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
-    address_list = external_api.get_coordinates(legal_addresses)
+    coordinates_dict = external_api.get_coordinates(legal_addresses)
 
-    edges_list = external_api.get_distances(legal_addresses, address_list)
+    edges_list = external_api.get_distances(coordinates_dict)
 
     database[route_id] = graph_api.get_min_hamiltonian_cycle(edges_list)
     msg = "SUCCESS: The shortest path has been successfully found"

@@ -1,49 +1,53 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from requests import request
 
 from api_v1.routes.schemas import LegalAddress, Geocoordinates
 
 
-def get_coordinates(legal_addresses: List[LegalAddress]) -> List[Geocoordinates]:
-    coordinates_list = []
+def get_coordinates(legal_addresses: List[LegalAddress]) -> Dict[LegalAddress, Geocoordinates]:
+    coordinates_dict = {}
     for legal_address in legal_addresses:
         response = request(
             url="http://localhost:8001/api/v1/geocoder/",
             method="POST",
             json=legal_address.model_dump(),
         )
-        coordinates_list.append(response.json().get("coordinates"))
+        coordinates_dict[legal_address] = response.json().get("coordinates")
 
-    return coordinates_list
+    return coordinates_dict
 
 
 def get_distances(
-    legal_addresses: List[LegalAddress], coordinates_list: List[Geocoordinates]
+        coordinates_dict: Dict[LegalAddress, Geocoordinates]
 ) -> List[Tuple[str, str, int]]:
     edges_list = []
+    passed_addr = set()
+    for addr1, coord1 in coordinates_dict.items():
+        passed_addr.add(addr1)
+        for addr2, coord2 in coordinates_dict.items():
+            if addr2 in passed_addr:
+                continue
 
-    for i in range(0, len(coordinates_list)):
-        for j in range(i + 1, len(coordinates_list)):
             response = request(
                 method="POST",
                 url="http://localhost:8002/api/v1/distance_matrix/",
                 json={
-                    "source": {**coordinates_list[i]},
-                    "destination": {**coordinates_list[j]},
+                    "source": {**coord1},
+                    "destination": {**coord2},
                 },
             )
             duration = response.json().get("duration")
             edge = (
-                f"{legal_addresses[i]}",
-                f"{legal_addresses[j]}",
+                f"{addr1}",
+                f"{addr2}",
                 duration,
             )
             edges_list.append(edge)
 
             edge = (
-                f"{legal_addresses[j]}",
-                f"{legal_addresses[i]}",
+                f"{addr2}",
+                f"{addr1}",
                 duration,
             )
             edges_list.append(edge)
