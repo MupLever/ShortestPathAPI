@@ -12,7 +12,7 @@ def create_route(session: Session):
 def get_routes(session: Session):
     query = """
     SELECT * 
-    FROM users INNER JOIN items ON users.id = routes.user_id;
+    FROM users INNER JOIN routes ON users.id = routes.user_id;
     """
 
     with session as session:
@@ -23,10 +23,10 @@ def get_routes(session: Session):
 
 def get_route(session: Session, route_id: int):
     query = f"""
-        SELECT * 
-        FROM users INNER JOIN items ON users.id = routes.user_id
-    	WHERE routes.id = {route_id};
-        """
+    SELECT * 
+    FROM users INNER JOIN routes ON users.id = routes.user_id
+    WHERE routes.id = {route_id};
+    """
 
     with session as session:
         result: Result = session.execute(text(query))

@@ -2,7 +2,7 @@ from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import Session, sessionmaker, DeclarativeBase
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from settings import settings
+from .settings import settings
 
 engine = create_engine(
     url=settings.DATABASE_URL_psycopg,
@@ -32,3 +32,9 @@ async_session_factory = async_sessionmaker(
     autocommit=False,
     expire_on_commit=False,
 )
+
+
+def get_session_dependency():
+    with session_factory() as session:
+        yield session
+        session.close()
