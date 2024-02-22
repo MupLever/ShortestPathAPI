@@ -5,7 +5,9 @@ from requests import request
 from api_v1.routes.schemas import LegalAddress, Geocoordinates
 
 
-def get_coordinates(legal_addresses: List[LegalAddress]) -> Dict[LegalAddress, Geocoordinates]:
+def get_coordinates(
+    legal_addresses: List[LegalAddress],
+) -> Dict[LegalAddress, Geocoordinates]:
     coordinates_dict = {}
     for legal_address in legal_addresses:
         response = request(
@@ -19,7 +21,7 @@ def get_coordinates(legal_addresses: List[LegalAddress]) -> Dict[LegalAddress, G
 
 
 def get_distances(
-        coordinates_dict: Dict[LegalAddress, Geocoordinates]
+    coordinates_dict: Dict[LegalAddress, Geocoordinates]
 ) -> List[Tuple[str, str, int]]:
     edges_list = []
     passed_addr = set()

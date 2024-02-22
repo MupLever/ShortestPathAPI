@@ -23,7 +23,6 @@ session_factory = sessionmaker(
     autoflush=False,
     autocommit=False,
     expire_on_commit=False,
-
 )
 
 async_session_factory = async_sessionmaker(

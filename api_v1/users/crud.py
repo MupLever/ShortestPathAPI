@@ -19,7 +19,7 @@ def get_users(session: Session) -> List[User]:
     return session.query(User).from_statement(text("SELECT *FROM users;")).all()
 
 
-def create_user(session: Session, user_in: UserCreate):
+def create_user(session: Session, user_in: UserCreate) -> User:
     user = User(**user_in.model_dump())
     session.add(user)
     session.commit()
@@ -27,7 +27,7 @@ def create_user(session: Session, user_in: UserCreate):
     return user
 
 
-def update_user(session: Session, user: User, user_update: UserUpdate):
+def update_user(session: Session, user: User, user_update: UserUpdate) -> User:
     for name, value in user_update.model_dump().items():
         setattr(user, name, value)
     session.commit()
@@ -35,7 +35,7 @@ def update_user(session: Session, user: User, user_update: UserUpdate):
     return user
 
 
-def delete_user(session: Session, user: User):
+def delete_user(session: Session, user: User) -> User:
     session.delete(user)
     session.commit()
     return user

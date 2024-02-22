@@ -14,4 +14,5 @@ async def get_version():
         res = await session.execute(text("SELECT VERSION();"))
         print(f"{res.first()=}")
 
+
 asyncio.get_event_loop().run_until_complete(get_version())

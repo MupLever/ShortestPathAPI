@@ -19,8 +19,8 @@ def get_min_hamiltonian_cycle(edges_list: List[Tuple[str, str, int]]) -> dict:
         if status != Status.OK:
             continue
 
-        if min_duration > data["total duration"]:
-            min_duration = data["total duration"]
+        if min_duration > data["total_duration"]:
+            min_duration = data["total_duration"]
             total_data = data
 
     return total_data
