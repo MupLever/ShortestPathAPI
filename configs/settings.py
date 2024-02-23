@@ -1,9 +1,20 @@
 import os
 
 from dotenv import load_dotenv
+from pathlib import Path
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
 load_dotenv()
+
+BASE_DIR = Path(__file__).parent.parent
+
+
+class AuthJWT(BaseModel):
+    public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    algorithm: str = "RS256"
+    access_token_expire_minutes: int = 20
 
 
 class Settings(BaseSettings):
@@ -21,6 +32,7 @@ class Settings(BaseSettings):
     def DATABASE_URL_psycopg(self):
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
+    auth_jwt: AuthJWT = AuthJWT()
     # model_config = SettingsConfigDict(env_file=".env")
 
 

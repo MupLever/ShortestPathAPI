@@ -9,8 +9,7 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     model_config = ConfigDict(from_attributes=True)
-
-    id: int
+    # id: int
 
 
 class UserCreate(UserBase):

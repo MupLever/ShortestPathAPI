@@ -42,7 +42,7 @@ API server that returns the optimal Hamiltonian cycle (chain).
 {
   "message": "The shortest path has been successfully found",
   "shortest_path": {
-    "route": [
+    "path": [
       {
         "address": "Moscow, Vladimirskya, 24, 130",
         "duration": 0
@@ -60,7 +60,7 @@ API server that returns the optimal Hamiltonian cycle (chain).
         "duration": 97
       }
     ],
-    "total duration": 209
+    "total_duration": 209
   }
 }
 ```
