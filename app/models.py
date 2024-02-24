@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict
 
-# from pydantic import EmailStr
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import (
     MetaData,
@@ -118,7 +117,7 @@ geocoordinates = Table(
     Column("id", Integer, primary_key=True),
     Column("latitude", Float),
     Column("longitude", Float),
-    Column("address_id", ForeignKey("addresses.id")),
+    Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -134,7 +133,7 @@ routes = Table(
     Column("id", Integer, primary_key=True),
     Column("total_duration", Integer, nullable=False),
     Column("path", JSON, nullable=False),
-    Column("user_id", ForeignKey("users.id")),
+    Column("user_id", ForeignKey("users.id", ondelete="CASCADE")),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -147,6 +146,6 @@ routes = Table(
 address_route = Table(
     "address_route",
     metadata,
-    Column("address_id", ForeignKey("addresses.id")),
-    Column("route_id", ForeignKey("routes.id")),
+    Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
+    Column("route_id", ForeignKey("routes.id", ondelete="CASCADE")),
 )

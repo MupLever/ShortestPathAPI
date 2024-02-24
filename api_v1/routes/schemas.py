@@ -34,19 +34,10 @@ class LegalAddressBase(BaseModel):
 
 class LegalAddress(LegalAddressBase):
     pass
-    # id: int
 
 
-class LegalAddressCreate(LegalAddressBase):
-    pass
-
-
-class LegalAddressUpdate(LegalAddressBase):
-    pass
-
-
-# class RouteBase(BaseModel):
-#     id: int
-#     total_duration: int
-#     path: Dict[str, Any]
-#     user_id: int
+class RouteBase(BaseModel):
+    id: int
+    total_duration: int
+    path: Dict[str, Any]
+    user_id: int
