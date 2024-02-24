@@ -10,21 +10,22 @@ class Geocoordinates(BaseModel):
 
 class LegalAddressBase(BaseModel):
     city: str
-    # district: str
+    district: str
     street: str
-    house_number: int
+    house_number: str
     apartment_number: int
     entrance_number: int
     floor: int
 
-    def __hash__(self):
-        return hash(
-            f"{self.city}, {self.street}, {self.house_number}, {self.apartment_number}"
-        )
-
     def __repr__(self):
         return (
-            f"{self.city}, {self.street}, {self.house_number}, {self.apartment_number}"
+            f"{self.city}, {self.district}, {self.street}, "
+            f"{self.house_number}, {self.apartment_number}, {self.entrance_number}, {self.floor}"
+        )
+
+    def __hash__(self):
+        return hash(
+            self.__repr__()
         )
 
     def __str__(self):
@@ -45,18 +46,7 @@ class LegalAddressUpdate(LegalAddressBase):
 
 
 # class RouteBase(BaseModel):
+#     id: int
 #     total_duration: int
 #     path: Dict[str, Any]
 #     user_id: int
-#
-#
-# class Route(RouteBase):
-#     id: int
-#
-#
-# class RouteCreate(RouteBase):
-#     pass
-#
-#
-# class RouteUpdate(RouteCreate):
-#     pass

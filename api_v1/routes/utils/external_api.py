@@ -22,7 +22,7 @@ def get_coordinates(
 
 def get_distances(
     coordinates_dict: Dict[LegalAddress, Geocoordinates]
-) -> List[Tuple[str, str, int]]:
+) -> List[Tuple[LegalAddress, LegalAddress, int]]:
     edges_list = []
     passed_addr = set()
     for addr1, coord1 in coordinates_dict.items():
@@ -39,17 +39,17 @@ def get_distances(
                     "destination": {**coord2},
                 },
             )
-            duration = response.json().get("duration")
+            duration: int = response.json().get("duration")
             edge = (
-                f"{addr1}",
-                f"{addr2}",
+                addr1,
+                addr2,
                 duration,
             )
             edges_list.append(edge)
 
             edge = (
-                f"{addr2}",
-                f"{addr1}",
+                addr2,
+                addr1,
                 duration,
             )
             edges_list.append(edge)

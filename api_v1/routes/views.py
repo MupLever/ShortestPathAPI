@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
-from api_v1.auth.utils import get_current_user
 from api_v1.routes import crud
+from api_v1.auth.utils import get_current_user
 from api_v1.routes.schemas import LegalAddress
 from api_v1.routes.utils import graph_api, external_api
 from app.models import User
@@ -89,15 +89,3 @@ async def update_route(
     msg = "SUCCESS: The shortest path has been successfully found"
 
     return {"message": msg, "shortest_path": new_route}
-
-
-# @router.patch("/{route_id}/")
-# async def update_route(route_id: int, legal_addresses: List[LegalAddress]):
-#     address_list = get_coordinates(legal_addresses)
-#
-#     data = get_distances(legal_addresses, address_list)
-#
-#     graph = HamiltonianGraph(data)
-#     msg, data = graph.find_hamiltonian_cycle()
-#     database[route_id] = data
-#     return {"message": msg, "shortest_path": database[route_id]}

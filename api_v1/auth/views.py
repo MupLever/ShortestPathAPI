@@ -17,8 +17,3 @@ async def log_in(user: User = Depends(auth_utils.check_user)):
     }
     access_token = auth.encode_jwt(jwt_payload)
     return TokenInfo(access_token=access_token, token_type="Bearer")
-
-
-# @router.delete("/logout")
-# async def log_out():
-#     pass

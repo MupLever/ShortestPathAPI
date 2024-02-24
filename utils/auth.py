@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
-
-import bcrypt
 import jwt
+import bcrypt
+
+from datetime import datetime, timedelta
 
 from configs import settings
 
@@ -39,7 +39,5 @@ def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(pwd_bytes, salt)
 
 
-def check_password(password: str, hashed_pw: bytes) -> bool:
-    # TODO: добавил, но надо проверить
-    return True
-    # return bcrypt.checkpw(password.encode(), hashed_pw)
+def check_password(password: str, hashed_pw: str) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed_pw.encode())

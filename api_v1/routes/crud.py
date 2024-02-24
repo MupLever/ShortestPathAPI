@@ -1,10 +1,10 @@
-from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
+from typing import List, Dict, Any, Optional, Type
 
 from app.models import Route, User
 
 
-def get_routes(session: Session, user: User) -> List[Route]:
+def get_routes(session: Session, user: User) -> List[Type[Route]]:
     return (
         session.query(Route)
         .join(User, User.id == Route.user_id)
