@@ -33,6 +33,7 @@ def update_user(session: Session, user: User, user_update: UserUpdate) -> User:
 
 
 def delete_user(session: Session, user: User) -> User:
-    session.delete(user)
+    user.is_active = False
+    # session.delete(user)
     session.commit()
     return user

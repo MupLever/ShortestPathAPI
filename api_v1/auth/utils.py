@@ -43,7 +43,7 @@ def check_user(
     if not (user := crud.get_user_by_username(session, username)):
         raise unauthed_exception
 
-    if auth.check_password(password, user.password):
+    if auth.check_password(password, user.password) and user.is_active:
         return user
 
     raise unauthed_exception

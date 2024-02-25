@@ -13,6 +13,7 @@ from sqlalchemy import (
     JSON,
     TIMESTAMP,
     ForeignKey,
+    Boolean,
 )
 
 
@@ -33,6 +34,7 @@ class User(Base):
 
     username: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
     password: Mapped[str] = mapped_column(nullable=False)
 
 
@@ -81,6 +83,7 @@ users = Table(
     Column("id", Integer, primary_key=True),
     Column("username", String, nullable=False),
     Column("email", String, nullable=False),
+    Column("is_active", Boolean, default=True),
     Column("password", String, nullable=False),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
