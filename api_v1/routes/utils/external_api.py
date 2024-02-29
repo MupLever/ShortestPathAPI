@@ -40,18 +40,10 @@ def get_distances(
                 },
             )
             duration: int = response.json().get("duration")
-            edge = (
-                addr1,
-                addr2,
-                duration,
-            )
+            edge = (addr1, addr2, duration,)
             edges_list.append(edge)
 
-            edge = (
-                addr2,
-                addr1,
-                duration,
-            )
+            edge = (addr2, addr1, duration,)
             edges_list.append(edge)
 
     return edges_list

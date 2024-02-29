@@ -6,7 +6,9 @@ from api_v1.routes.schemas import LegalAddress
 from utils.graph import HamiltonianGraph, Status
 
 
-def get_min_hamiltonian_cycle(edges_list: List[Tuple[LegalAddress, LegalAddress, int]]) -> dict:
+def get_min_hamiltonian_cycle(
+    edges_list: List[Tuple[LegalAddress, LegalAddress, int]]
+) -> dict:
     edges_list.sort(key=lambda edge: edge[2])
 
     graph = HamiltonianGraph()

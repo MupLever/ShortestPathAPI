@@ -8,7 +8,7 @@ from utils import auth
 router = APIRouter(tags=["Auth"], prefix="/api/v1/shortest_path/auth")
 
 
-@router.post("/login")
+@router.post("/login/")
 async def log_in(user: User = Depends(auth_utils.check_user)):
     jwt_payload: dict = {
         "sub": user.id,

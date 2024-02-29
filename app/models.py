@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import (
@@ -34,7 +34,7 @@ class User(Base):
 
     username: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(server_default=text("True"))
     password: Mapped[str] = mapped_column(nullable=False)
 
 
@@ -42,12 +42,10 @@ class Address(Base):
     __tablename__ = "addresses"
 
     city: Mapped[str] = mapped_column(nullable=False)
-    district: Mapped[str] = mapped_column()
+    district: Mapped[Optional[str]] = mapped_column()
     street: Mapped[str] = mapped_column(nullable=False)
     house_number: Mapped[str] = mapped_column(nullable=False)
-    apartment_number: Mapped[str] = mapped_column()
-    entrance_number: Mapped[int] = mapped_column()
-    floor: Mapped[int] = mapped_column()
+    apartment_number: Mapped[Optional[str]] = mapped_column()
 
 
 class Geocoordinates(Base):
@@ -60,11 +58,13 @@ class Geocoordinates(Base):
     )
 
 
-class AddressRoute(Base):
-    __tablename__ = "address_route"
-
-    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
-    route_id: Mapped[int] = mapped_column(ForeignKey("routes.id"))
+# class ListPositions(Base):
+#     __tablename__ = "list_positions"
+#
+#     pos: Mapped[int] = mapped_column(nullable=False)
+#     duration: Mapped[int] = mapped_column(nullable=False)
+#     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id", ondelete="CASCADE"))
+#     route_id: Mapped[int] = mapped_column(ForeignKey("routes.id", ondelete="CASCADE"))
 
 
 class Route(Base):
@@ -83,7 +83,7 @@ users = Table(
     Column("id", Integer, primary_key=True),
     Column("username", String, nullable=False),
     Column("email", String, nullable=False),
-    Column("is_active", Boolean, default=True),
+    Column("is_active", Boolean, server_default=text("True")),
     Column("password", String, nullable=False),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
@@ -103,8 +103,6 @@ addresses = Table(
     Column("street", String, nullable=False),
     Column("house_number", String, nullable=False),
     Column("apartment_number", String),
-    Column("entrance_number", Integer),
-    Column("floor", Integer),
     Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
     Column(
         "updated_at",
@@ -146,9 +144,11 @@ routes = Table(
     ),
 )
 
-address_route = Table(
-    "address_route",
-    metadata,
-    Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
-    Column("route_id", ForeignKey("routes.id", ondelete="CASCADE")),
-)
+# list_positions = Table(
+#     "list_positions",
+#     metadata,
+#     Column("pos", Integer, nullable=False),
+#     Column("duration", Integer, nullable=False),
+#     Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
+#     Column("route_id", ForeignKey("routes.id", ondelete="CASCADE")),
+# )

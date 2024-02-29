@@ -6,7 +6,7 @@ from starlette import status
 from api_v1.routes import crud
 from api_v1.auth.utils import get_current_user
 from api_v1.routes.schemas import LegalAddress
-from api_v1.routes.utils import graph_api, external_api, transform
+from api_v1.routes.utils import graph_api, external_api
 from app.models import User
 
 from configs.database import get_session_dependency
@@ -41,7 +41,7 @@ async def create_shortest_path(
     if len(legal_addresses) < 3:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="the number of vertices is less than 3"
+            detail="the number of vertices is less than 3",
         )
 
     coordinates_dict = external_api.get_coordinates(legal_addresses)
@@ -49,10 +49,9 @@ async def create_shortest_path(
     edges_list = external_api.get_distances(coordinates_dict)
 
     data = graph_api.get_min_hamiltonian_cycle(edges_list)
-    data["path"] = transform.to_list_legal_address(data["path"])
+
     route = crud.create_route(session, user, data)
     msg = "SUCCESS: The shortest path has been successfully found"
-
     return {"message": msg, "shortest_path": route}
 
 
@@ -79,11 +78,6 @@ async def update_route(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    if len(legal_addresses) < 3:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="the number of vertices is less than 3"
-        )
     route = crud.get_route(session, user, route_id)
 
     if not route:
@@ -92,12 +86,18 @@ async def update_route(
             detail=f"Route with {route_id=} not found",
         )
 
+    if len(legal_addresses) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="the number of vertices is less than 3",
+        )
+
     coordinates_dict = external_api.get_coordinates(legal_addresses)
 
     edges_list = external_api.get_distances(coordinates_dict)
 
     data = graph_api.get_min_hamiltonian_cycle(edges_list)
-    data["path"] = transform.to_list_legal_address(data["path"])
+
     new_route = crud.update_route(session, route, data)
     msg = "SUCCESS: The shortest path has been successfully found"
 

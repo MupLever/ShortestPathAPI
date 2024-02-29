@@ -13,8 +13,7 @@ router = APIRouter(tags=["Users"], prefix="/api/v1/shortest_path/users")
 
 @router.post("/", description="Создать пользователя")
 async def create_user(
-    user: UserCreate,
-    session: Session = Depends(get_session_dependency)
+    user: UserCreate, session: Session = Depends(get_session_dependency)
 ):
     return crud.create_user(session, user)
 
@@ -39,9 +38,9 @@ async def get_users(session: Session = Depends(get_session_dependency)):
 
 @router.delete("/{user_id}/", description="Удалить пользователя")
 async def delete_user(
-        user_id: int,
-        user: User = Depends(get_current_user),
-        session: Session = Depends(get_session_dependency),
+    user_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session_dependency),
 ):
     user = crud.get_user(session, user.id)
     if not user:

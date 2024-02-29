@@ -1,5 +1,3 @@
-from typing import Dict, Any
-
 from pydantic import BaseModel
 
 
@@ -14,19 +12,15 @@ class LegalAddressBase(BaseModel):
     street: str
     house_number: str
     apartment_number: int
-    entrance_number: int
-    floor: int
 
     def __repr__(self):
         return (
             f"{self.city}, {self.district}, {self.street}, "
-            f"{self.house_number}, {self.apartment_number}, {self.entrance_number}, {self.floor}"
+            f"{self.house_number}, {self.apartment_number}"
         )
 
     def __hash__(self):
-        return hash(
-            self.__repr__()
-        )
+        return hash(self.__repr__())
 
     def __str__(self):
         return self.__repr__()
@@ -34,10 +28,4 @@ class LegalAddressBase(BaseModel):
 
 class LegalAddress(LegalAddressBase):
     pass
-
-
-class RouteBase(BaseModel):
-    id: int
-    total_duration: int
-    path: Dict[str, Any]
-    user_id: int
+    # id: int
