@@ -3,20 +3,20 @@ from math import inf
 from typing import List, Tuple
 
 from api_v1.routes.schemas import LegalAddress
-from utils.graph import HamiltonianGraph, Status
+from utils.graph import HamiltonianGraph, Status, EdgesList
 
 
 def get_min_hamiltonian_cycle(
-    edges_list: List[Tuple[LegalAddress, LegalAddress, int]]
+    edges_list: EdgesList
 ) -> dict:
-    edges_list.sort(key=lambda edge: edge[2])
+    edges_list.sort()
 
     graph = HamiltonianGraph()
-    min_duration = inf
+    min_duration = edges_list.sum()
     total_data = {}
 
-    for from_, to_, weight in edges_list:
-        graph.add_edge(from_, to_, weight)
+    for edge in edges_list:
+        graph.add_edge(edge.node_from, edge.node_to, edge.weight)
         status, data = graph.get_hamiltonian_cycle()
 
         if status != Status.OK:

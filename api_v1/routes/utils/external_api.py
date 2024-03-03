@@ -1,8 +1,9 @@
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 from requests import request
 
 from api_v1.routes.schemas import LegalAddress, Geocoordinates
+from utils.graph import EdgesList
 
 
 def get_coordinates(
@@ -22,8 +23,8 @@ def get_coordinates(
 
 def get_distances(
     coordinates_dict: Dict[LegalAddress, Geocoordinates]
-) -> List[Tuple[LegalAddress, LegalAddress, int]]:
-    edges_list = []
+) -> EdgesList:
+    edges_list = EdgesList()
     passed_addr = set()
     for addr1, coord1 in coordinates_dict.items():
         passed_addr.add(addr1)
@@ -40,10 +41,9 @@ def get_distances(
                 },
             )
             duration: int = response.json().get("duration")
-            edge = (addr1, addr2, duration,)
-            edges_list.append(edge)
 
-            edge = (addr2, addr1, duration,)
-            edges_list.append(edge)
+            edges_list.add_edge(addr1, addr2, duration)
+
+            edges_list.add_edge(addr2, addr1, duration)
 
     return edges_list

@@ -41,6 +41,7 @@ def delete_route(session: Session, route: Route) -> Route:
 def update_route(session: Session, route: Route, data_update: Dict[str, Any]) -> Route:
     for name, value in data_update.items():
         setattr(route, name, value)
+
     session.commit()
     session.refresh(route)
     return route

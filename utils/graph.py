@@ -6,7 +6,7 @@ for searching for a Hamiltonian cycle
 
 from __future__ import annotations
 from abc import ABC
-from typing import Any, Iterable, Tuple, Set, Optional
+from typing import Any, Iterable, Tuple, Set, Optional, List
 from queue import Queue
 from random import choice
 
@@ -16,58 +16,59 @@ class Status:
     ERROR: int = 1
 
 
-class Node:
-    """node class storing node value and incident edges"""
-
-    def __init__(self, value: Any) -> None:
-        self.value = value
-        self.edges = set()
-        self.parents = {}
-
-    def __ne__(self, other: Node) -> bool:
-        if not isinstance(other, type(self)):
-            return True
-
-        return self.value != other.value
-
-    def __eq__(self, other: Node) -> bool:
-        if not isinstance(other, type(self)):
-            return False
-
-        return self.value == other.value
-
-    def __hash__(self) -> int:
-        return hash(self.value)
-
-    def __repr__(self) -> str:
-        return f"{self.value}"
+class EdgeBase(ABC):
+    pass
 
 
-class Edge:
-    """edge class storing the incident node"""
-
-    def __init__(self, incident_node: Node, weight: int) -> None:
-        self.incident_node = incident_node
-        self.weight = weight
-
-    def __lt__(self, other: Edge) -> bool:
-        return self.weight < other.weight
-
-    def __repr__(self) -> str:
-        return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
+class NodeBase(ABC):
+    pass
 
 
 class GraphBase(ABC):
     """"""
 
-    def add_or_get_node(self, value: Any) -> Node:
+    def add_or_get_node(self, value: Any) -> NodeBase:
         raise NotImplementedError
 
-    def add_edge(self, value_from, value_to, weight) -> None:
+    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
         raise NotImplementedError
 
     def traverse(self) -> None:
         raise NotImplementedError
+
+
+class EdgesList(GraphBase):
+    class Edge(EdgeBase):
+        def __init__(self, node_from: Any, node_to: Any, weight: int):
+            self.node_from = node_from
+            self.node_to = node_to
+            self.weight = weight
+
+        def __radd__(self, other):
+            return self.weight + other
+
+    def __init__(self):
+        self.edges_list: list = []
+
+    def __iter__(self):
+        return iter(self.edges_list)
+
+    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
+        edge = self.Edge(value_from, value_to, weight)
+        self.edges_list.append(edge)
+
+    def sort(self) -> None:
+        self.edges_list.sort(key=lambda edge: edge.weight)
+
+    def sum(self):
+        return sum(self.edges_list)
+
+    def to_hamiltonian_graph(self) -> HamiltonianGraph:
+        graph = HamiltonianGraph()
+        for edge in self.edges_list:
+            graph.add_edge(edge.node_from, edge.node_to, edge.weight)
+
+        return graph
 
 
 class MatrixGraph(GraphBase):
@@ -95,13 +96,51 @@ class MatrixGraph(GraphBase):
         self.matrix[node_from][node_to] = weight
 
     def traverse(self) -> None:
-        # print(list(self.graph.keys()))
         for row in self.matrix:
             print(row, end="\n")
 
 
 class HashTableGraph(GraphBase):
     """a directed graph class implemented through a dictionary"""
+
+    class Node:
+        """node class storing node value and incident edges"""
+
+        def __init__(self, value: Any) -> None:
+            self.value = value
+            self.edges = set()
+            self.parents = {}
+
+        def __ne__(self, other: NodeBase) -> bool:
+            if not isinstance(other, type(self)):
+                return True
+
+            return self.value != other.value
+
+        def __eq__(self, other: NodeBase) -> bool:
+            if not isinstance(other, type(self)):
+                return False
+
+            return self.value == other.value
+
+        def __hash__(self) -> int:
+            return hash(self.value)
+
+        def __repr__(self) -> str:
+            return f"{self.value}"
+
+    class Edge(EdgeBase):
+        """edge class storing the incident node"""
+
+        def __init__(self, incident_node, weight: int) -> None:
+            self.incident_node = incident_node
+            self.weight = weight
+
+        def __lt__(self, other) -> bool:
+            return self.weight < other.weight
+
+        def __repr__(self) -> str:
+            return f"<Edge: weight={self.weight}, incident_node={self.incident_node}>"
 
     def __init__(self) -> None:
         self.graph = {}
@@ -117,16 +156,16 @@ class HashTableGraph(GraphBase):
         """adding and returning a node"""
 
         if value not in self.graph:
-            self.graph[value] = Node(value)
+            self.graph[value] = self.Node(value)
             self.n_vertex += 1
 
         return self.graph[value]
 
-    def add_edge(self, value_from: Any, value_to: Any, weight: float) -> None:
+    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
         node_from = self.add_or_get_node(value_from)
         node_to = self.add_or_get_node(value_to)
 
-        edge = Edge(node_to, weight)
+        edge = self.Edge(node_to, weight)
         node_from.edges.add(edge)
         node_to.parents[node_from] = edge
 
@@ -236,7 +275,7 @@ class HamiltonianGraph(HashTableGraph):
         return True
 
     @staticmethod
-    def _get_weight_between(node: Node, adjacent_node: Node) -> Optional[int]:
+    def _get_weight_between(node, adjacent_node) -> Optional[int]:
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
@@ -248,7 +287,7 @@ class HamiltonianGraph(HashTableGraph):
         return None
 
     @staticmethod
-    def _get_nearest_not_passed_node(node: Node, passed: Set[Node]) -> Optional[Node]:
+    def _get_nearest_not_passed_node(node, passed: set) -> Any:
         """returns the nearest unmarked node"""
 
         edges_to_not_passed_nodes = list(
