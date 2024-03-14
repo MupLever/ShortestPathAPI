@@ -14,4 +14,3 @@ class LegalAddressBase(BaseModel):
 class LegalAddress(LegalAddressBase):
     pass
     # id: int
-

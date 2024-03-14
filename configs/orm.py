@@ -2,7 +2,7 @@ import asyncio
 
 from sqlalchemy import text
 
-from database import session_factory, async_session_factory
+from configs.database import session_factory, async_session_factory
 
 with session_factory() as session:
     res = session.execute(text("SELECT VERSION();"))

@@ -1,14 +1,7 @@
-from math import inf
-
-from typing import List, Tuple
-
-from api_v1.routes.schemas import LegalAddress
 from utils.graph import HamiltonianGraph, Status, EdgesList
 
 
-def get_min_hamiltonian_cycle(
-    edges_list: EdgesList
-) -> dict:
+def get_min_hamiltonian_cycle(edges_list: EdgesList) -> dict:
     edges_list.sort()
 
     graph = HamiltonianGraph()

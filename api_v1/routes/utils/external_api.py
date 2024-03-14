@@ -1,29 +1,32 @@
-from typing import List, Dict
+import dataclasses
+from typing import List, Dict, Type
 
 from requests import request
 
-from api_v1.routes.schemas import LegalAddress, Geocoordinates
+from api_v1.routes.schemas import Geocoordinates
+from app.models import Address, model_dump
 from utils.graph import EdgesList
 
 
 def get_coordinates(
-    legal_addresses: List[LegalAddress],
-) -> Dict[LegalAddress, Geocoordinates]:
+    legal_addresses: List[Type[Address]],
+) -> Dict[int, Geocoordinates]:
     coordinates_dict = {}
     for legal_address in legal_addresses:
+        address_dict = model_dump(legal_address)
+        address_id = address_dict.pop("id")
+
         response = request(
             url="http://localhost:8001/api/v1/geocoder/",
             method="POST",
-            json=legal_address.model_dump(),
+            json=address_dict,
         )
-        coordinates_dict[legal_address] = response.json().get("coordinates")
+        coordinates_dict[address_id] = response.json().get("coordinates")
 
     return coordinates_dict
 
 
-def get_distances(
-    coordinates_dict: Dict[LegalAddress, Geocoordinates]
-) -> EdgesList:
+def get_distances(coordinates_dict: Dict[int, Geocoordinates]) -> EdgesList:
     edges_list = EdgesList()
     passed_addr = set()
     for addr1, coord1 in coordinates_dict.items():

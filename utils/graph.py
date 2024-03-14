@@ -5,40 +5,20 @@ for searching for a Hamiltonian cycle
 """
 
 from __future__ import annotations
-from abc import ABC
-from typing import Any, Iterable, Tuple, Set, Optional, List
+
+from enum import Enum
+from typing import Any, Iterable, Tuple, Set, Optional
 from queue import Queue
 from random import choice
 
 
-class Status:
+class Status(Enum):
     OK: int = 0
     ERROR: int = 1
 
 
-class EdgeBase(ABC):
-    pass
-
-
-class NodeBase(ABC):
-    pass
-
-
-class GraphBase(ABC):
-    """"""
-
-    def add_or_get_node(self, value: Any) -> NodeBase:
-        raise NotImplementedError
-
-    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
-        raise NotImplementedError
-
-    def traverse(self) -> None:
-        raise NotImplementedError
-
-
-class EdgesList(GraphBase):
-    class Edge(EdgeBase):
+class EdgesList:
+    class Edge:
         def __init__(self, node_from: Any, node_to: Any, weight: int):
             self.node_from = node_from
             self.node_to = node_to
@@ -71,7 +51,7 @@ class EdgesList(GraphBase):
         return graph
 
 
-class MatrixGraph(GraphBase):
+class MatrixGraph:
     """"""
 
     def __init__(self) -> None:
@@ -100,7 +80,7 @@ class MatrixGraph(GraphBase):
             print(row, end="\n")
 
 
-class HashTableGraph(GraphBase):
+class HashTableGraph:
     """a directed graph class implemented through a dictionary"""
 
     class Node:
@@ -111,13 +91,13 @@ class HashTableGraph(GraphBase):
             self.edges = set()
             self.parents = {}
 
-        def __ne__(self, other: NodeBase) -> bool:
+        def __ne__(self, other) -> bool:
             if not isinstance(other, type(self)):
                 return True
 
             return self.value != other.value
 
-        def __eq__(self, other: NodeBase) -> bool:
+        def __eq__(self, other) -> bool:
             if not isinstance(other, type(self)):
                 return False
 
@@ -129,7 +109,7 @@ class HashTableGraph(GraphBase):
         def __repr__(self) -> str:
             return f"{self.value}"
 
-    class Edge(EdgeBase):
+    class Edge:
         """edge class storing the incident node"""
 
         def __init__(self, incident_node, weight: int) -> None:
@@ -317,7 +297,7 @@ class HamiltonianGraph(HashTableGraph):
                 f"The graph doesn't contain vertices with this value={start_value}"
             )
 
-        data["path"].append({"address": f"{start_node}", "duration": 0})
+        data["path"].append({"address": start_node.value, "duration": 0})
 
         cur_node = start_node
         passed = {cur_node}
@@ -331,7 +311,7 @@ class HamiltonianGraph(HashTableGraph):
             if duration is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            data["path"].append({"address": f"{nearest_node}", "duration": duration})
+            data["path"].append({"address": nearest_node.value, "duration": duration})
             data["total_duration"] += duration
             passed.add(nearest_node)
             cur_node = nearest_node
@@ -340,7 +320,7 @@ class HamiltonianGraph(HashTableGraph):
         if duration is None:
             return Status.ERROR, {"path": [], "total_duration": 0}
 
-        data["path"].append({"address": f"{start_node}", "duration": duration})
+        data["path"].append({"address": start_node.value, "duration": duration})
         data["total_duration"] += duration
 
         return Status.OK, data

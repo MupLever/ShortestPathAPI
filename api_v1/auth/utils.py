@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from api_v1.auth import crud
+from api_v1.auth.schemas import AuthUser
 from app.models import User
 
 from configs.database import get_session_dependency
@@ -32,18 +33,14 @@ def get_current_user(
     raise unauthed_exception
 
 
-def check_user(
-    email: str = Form(),
-    password: str = Form(),
-    session: Session = Depends(get_session_dependency),
-):
+def check_user(auth_user: AuthUser, session: Session = Depends(get_session_dependency)):
     unauthed_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid username or password"
     )
-    if not (user := crud.get_user_by_email(session, email)):
+    if not (user := crud.get_user_by_email(session, auth_user.email)):
         raise unauthed_exception
 
-    if auth.check_password(password, user.password) and user.is_active:
+    if auth.check_password(auth_user.password, user.password) and user.is_active:
         return user
 
     raise unauthed_exception

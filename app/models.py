@@ -1,32 +1,31 @@
-from datetime import datetime
-from typing import Any, Dict, Optional
+import enum
 
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy import (
-    MetaData,
-    text,
-    Table,
-    Column,
-    Integer,
-    String,
-    Float,
-    JSON,
-    TIMESTAMP,
-    ForeignKey,
-    Boolean,
+from datetime import datetime
+from typing import Optional, List
+
+from sqlalchemy import text, ForeignKey
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    DeclarativeBase,
+    relationship,
 )
+
+
+class Status(enum.Enum):
+    pending = "pending"
+    done = "done"
+    canceled = "canceled"
+
+
+def model_dump(row):
+    return {column.name: getattr(row, column.name) for column in row.__table__.columns}
 
 
 class Base(DeclarativeBase):
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    created_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
-    )
 
 
 class User(Base):
@@ -36,6 +35,14 @@ class User(Base):
     email: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(server_default=text("True"))
     password: Mapped[str] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=text("TIMEZONE('utc', now())")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
+    )
+
+    routes: Mapped[List["Route"]] = relationship(back_populates="user")
 
 
 class Address(Base):
@@ -45,7 +52,11 @@ class Address(Base):
     district: Mapped[Optional[str]] = mapped_column()
     street: Mapped[str] = mapped_column(nullable=False)
     house_number: Mapped[str] = mapped_column(nullable=False)
-    apartment_number: Mapped[Optional[str]] = mapped_column()
+
+    routes: Mapped[List["Route"]] = relationship(
+        back_populates="addresses", secondary="positions"
+    )
+    positions: Mapped[List["Position"]] = relationship(back_populates="address")
 
 
 class Geocoordinates(Base):
@@ -58,97 +69,59 @@ class Geocoordinates(Base):
     )
 
 
-# class ListPositions(Base):
-#     __tablename__ = "list_positions"
-#
-#     pos: Mapped[int] = mapped_column(nullable=False)
-#     duration: Mapped[int] = mapped_column(nullable=False)
-#     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id", ondelete="CASCADE"))
-#     route_id: Mapped[int] = mapped_column(ForeignKey("routes.id", ondelete="CASCADE"))
-
-
 class Route(Base):
     __tablename__ = "routes"
 
     total_duration: Mapped[int] = mapped_column(nullable=False)
-    path: Mapped[Dict[str, Any]] = mapped_column(type_=JSON, nullable=False)
+    executor: Mapped[str] = mapped_column(nullable=False)
+    execution_date: Mapped[datetime] = mapped_column(nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=text("TIMEZONE('utc', now())")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
+    )
+
+    user: Mapped["User"] = relationship(back_populates="routes")
+
+    positions: Mapped[List["Position"]] = relationship(back_populates="route")
+    addresses: Mapped[List["Address"]] = relationship(
+        back_populates="routes", secondary="positions"
+    )
 
 
-metadata = MetaData()
+class Position(Base):
+    __tablename__ = "positions"
 
-users = Table(
-    "users",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("username", String, nullable=False),
-    Column("email", String, nullable=False),
-    Column("is_active", Boolean, server_default=text("True")),
-    Column("password", String, nullable=False),
-    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
-    Column(
-        "updated_at",
-        TIMESTAMP,
-        server_default=text("TIMEZONE('utc', now())"),
-        onupdate=datetime.utcnow,
-    ),
-)
+    duration: Mapped[int] = mapped_column(nullable=False)
+    pos: Mapped[int] = mapped_column(nullable=False)
+    status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
+    address_id: Mapped[int] = mapped_column(
+        ForeignKey("addresses.id", ondelete="CASCADE"), primary_key=True
+    )
+    route_id: Mapped[int] = mapped_column(
+        ForeignKey("routes.id", ondelete="CASCADE"), primary_key=True
+    )
 
-addresses = Table(
-    "addresses",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("city", String, nullable=False),
-    Column("district", String),
-    Column("street", String, nullable=False),
-    Column("house_number", String, nullable=False),
-    Column("apartment_number", String),
-    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
-    Column(
-        "updated_at",
-        TIMESTAMP,
-        server_default=text("TIMEZONE('utc', now())"),
-        onupdate=datetime.utcnow,
-    ),
-)
+    route: Mapped["Route"] = relationship(back_populates="positions")
+    address: Mapped["Address"] = relationship(back_populates="positions")
 
-geocoordinates = Table(
-    "geocoordinates",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("latitude", Float),
-    Column("longitude", Float),
-    Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
-    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
-    Column(
-        "updated_at",
-        TIMESTAMP,
-        server_default=text("TIMEZONE('utc', now())"),
-        onupdate=datetime.utcnow,
-    ),
-)
 
-routes = Table(
-    "routes",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("total_duration", Integer, nullable=False),
-    Column("path", JSON, nullable=False),
-    Column("user_id", ForeignKey("users.id", ondelete="CASCADE")),
-    Column("created_at", TIMESTAMP, server_default=text("TIMEZONE('utc', now())")),
-    Column(
-        "updated_at",
-        TIMESTAMP,
-        server_default=text("TIMEZONE('utc', now())"),
-        onupdate=datetime.utcnow,
-    ),
-)
+"""
+SELECT positions.pos, positions.duration, addresses.city, addresses.district, addresses.street, addresses.house_number
+FROM users ,
+    routes INNER JOIN positions ON routes.id = positions.route_id,
+    positionsINNER JOIN addresses ON positions.address_id == addresses.id
+WHERE users.id = user_id
+ORDER BY positions.pos;
+"""
 
-# list_positions = Table(
-#     "list_positions",
-#     metadata,
-#     Column("pos", Integer, nullable=False),
-#     Column("duration", Integer, nullable=False),
-#     Column("address_id", ForeignKey("addresses.id", ondelete="CASCADE")),
-#     Column("route_id", ForeignKey("routes.id", ondelete="CASCADE")),
-# )
+"""
+SELECT positions.pos, positions.duration, addresses.city, addresses.district, addresses.street, addresses.house_number
+FROM users INNER JOIN routes ON users.id = routes.user_id
+    INNER JOIN positions ON routes.id = positions.route_id
+    INNER JOIN addresses ON positions.address_id = addresses.id
+WHERE users.id = user_id AND routes.id = route_id
+ORDER BY positions.pos;
+"""
