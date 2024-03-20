@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    container_name: api_backend
+    env_file:
+      - .env
+    command: --port 8000
+    ports:
+      - '8000:8000'
+    expose:
+      - 8000
+    depends_on:
+      - postgredb
+      - redis
+  
+  postgredb:
+    image: postgres:14.11
+    container_name: postgredb
+    env_file:
+      - .env
+    command: --port 5432
+    expose:
+      - 5432
+  
+  celery:
+    build: .
+    container_name: celery
+    command: ["celery.sh", "celery"]
+    depends_on:
+      - redis
+  
+  flower:
+    build: .
+    container_name: flower
+    command: ["celery.sh", "flower"]
+    ports:
+      - '5555:5555'
+    depends_on:
+      - celery
+      - redis
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    command: --port 6379
+    expose:
+      - 6379
