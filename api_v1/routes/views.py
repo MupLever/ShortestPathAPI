@@ -72,35 +72,18 @@ async def delete_route(
 
 
 # TODO: переделать
-# @router.put("/{route_id}/", description="Изменить маршрут")
-# async def update_route(
-#         route_id: int,
-#         info: Info,
-#         user: User = Depends(get_current_user),
-#         session: Session = Depends(get_session_dependency),
-# ):
-#     route = crud.get_route(session, user, route_id)
-#
-#     if not route:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"Route with {route_id=} not found",
-#         )
-#
-#     if len(legal_addresses) < 3:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="the number of vertices is less than 3",
-#         )
-#
-#     legal_addresses = get_addresses_by_id_list(session, info.addresses_ids)
-#     coordinates_dict = external_api.get_coordinates(legal_addresses)
-#     edges_list = external_api.get_distances(coordinates_dict)
-#     data = graph_api.get_min_hamiltonian_cycle(edges_list)
-#     data["executor"] = info.executor
-#     data["execution_date"] = info.execution_date
-#
-#     new_route = crud.update_route(session, route, data)
-#     msg = "SUCCESS: The shortest path has been successfully found"
-#
-#     return {"message": msg, "shortest_path": new_route}
+@router.patch("/{route_id}/", description="Изменить статус продвижения по маршруту")
+async def update_route_status(
+        route_id: int,
+        user: User = Depends(get_current_user),
+        session: Session = Depends(get_session_dependency),
+):
+    route = crud.get_route(session, user, route_id)
+
+    if not route:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Route with {route_id=} not found",
+        )
+
+    return {}

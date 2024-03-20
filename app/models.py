@@ -106,22 +106,3 @@ class Position(Base):
 
     route: Mapped["Route"] = relationship(back_populates="positions")
     address: Mapped["Address"] = relationship(back_populates="positions")
-
-
-"""
-SELECT positions.pos, positions.duration, addresses.city, addresses.district, addresses.street, addresses.house_number
-FROM users ,
-    routes INNER JOIN positions ON routes.id = positions.route_id,
-    positionsINNER JOIN addresses ON positions.address_id == addresses.id
-WHERE users.id = user_id
-ORDER BY positions.pos;
-"""
-
-"""
-SELECT positions.pos, positions.duration, addresses.city, addresses.district, addresses.street, addresses.house_number
-FROM users INNER JOIN routes ON users.id = routes.user_id
-    INNER JOIN positions ON routes.id = positions.route_id
-    INNER JOIN addresses ON positions.address_id = addresses.id
-WHERE users.id = user_id AND routes.id = route_id
-ORDER BY positions.pos;
-"""

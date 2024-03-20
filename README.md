@@ -8,60 +8,101 @@ API server that returns the optimal Hamiltonian cycle (chain).
 ### Required request format
 
 ```json
-[
-  {
-    "city": "Moscow",
-    "street": "Vladimirskya",
-    "house_number": 24,
-    "apartment_number": 130,
-    "entrance_number": 5,
-    "floor": 3
-  },
-  {
-    "city": "ST",
-    "street": "Lenina",
-    "house_number": 114,
-    "apartment_number": 2007,
-    "entrance_number": 1,
-    "floor": 10
-  },
-  {
-    "city": "Irkutsk",
-    "street": "Deputatskya",
-    "house_number": 7,
-    "apartment_number": 80,
-    "entrance_number": 2,
-    "floor": 10
-  }
-]
+{
+  "addresses_ids": [4, 5, 6, 7],
+  "executor": "string",
+  "execution_date": "2024-03-20T19:42:57.980Z"
+}
 ```
 
 ### Response format
 
 ```json
 {
-  "message": "The shortest path has been successfully found",
-  "shortest_path": {
-    "path": [
-      {
-        "address": "Moscow, Vladimirskya, 24, 130",
-        "duration": 0
-      },
-      {
-        "address": "Irkutsk, Deputatskya, 7, 80",
-        "duration": 37
-      },
-      {
-        "address": "ST, Lenina, 114, 2007",
-        "duration": 75
-      },
-      {
-        "address": "Moscow, Vladimirskya, 24, 130",
-        "duration": 97
+  "total_duration": 218,
+  "execution_date": "2024-03-13T23:04:05.853000",
+  "created_at": "2024-03-13T20:54:31.044919",
+  "updated_at": "2024-03-13T20:54:31.044919",
+  "executor": "string",
+  "user_id": 1,
+  "id": 11,
+  "positions": [
+    {
+      "duration": 0,
+      "status": "pending",
+      "id": 11,
+      "pos": 0,
+      "address_id": 4,
+      "route_id": 11,
+      "address": {
+        "district": "Академический",
+        "house_number": "1к3с1",
+        "city": "Москва",
+        "street": "улица Шверника",
+        "id": 4
       }
-    ],
-    "total_duration": 209
-  }
+    },
+    {
+      "duration": 23,
+      "status": "pending",
+      "id": 12,
+      "pos": 1,
+      "address_id": 5,
+      "route_id": 11,
+      "address": {
+        "district": "Академический",
+        "house_number": "1к3с3Г",
+        "city": "Москва",
+        "street": "улица Шверника",
+        "id": 5
+      }
+    },
+    {
+      "duration": 46,
+      "status": "pending",
+      "id": 13,
+      "pos": 2,
+      "address_id": 6,
+      "route_id": 11,
+      "address": {
+        "district": "Академический",
+        "house_number": "1к4",
+        "city": "Москва",
+        "street": "улица Шверника",
+        "id": 6
+      }
+    },
+    {
+      "duration": 65,
+      "status": "pending",
+      "id": 14,
+      "pos": 3,
+      "address_id": 7,
+      "route_id": 11,
+      "address": {
+        "district": "Академический",
+        "house_number": "2с4",
+        "city": "Москва",
+        "street": "улица Шверника",
+        "id": 7
+      }
+    },
+    {
+      "duration": 84,
+      "status": "pending",
+      "id": 15,
+      "pos": 4,
+      "address_id": 4,
+      "route_id": 11,
+      "address": {
+        "district": "Академический",
+        "house_number": "1к3с1",
+        "city": "Москва",
+        "street": "улица Шверника",
+        "id": 4
+      }
+    }
+  ]
 }
 ```
 ### Version
