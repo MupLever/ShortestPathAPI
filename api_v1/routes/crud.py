@@ -1,8 +1,8 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload, joinedload
-from typing import List, Dict, Any, Optional, Type
+from sqlalchemy.orm import Session, selectinload
+from typing import List, Dict, Any, Optional
 
-from app.models import Route, User, Position, Address
+from app.models import Route, User, Position
 
 
 def get_routes(session: Session, user: User) -> List[Route]:

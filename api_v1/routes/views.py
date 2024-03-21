@@ -2,14 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
-from api_v1.addresses.crud import get_addresses_by_id_list
 from api_v1.routes import crud
 from api_v1.auth.utils import get_current_user
 from api_v1.routes.schemas import Info
-from api_v1.routes.utils import graph_api, external_api
 from app.models import User
-
 from configs.database import get_session_dependency
+from tasks import route as route_task
 
 router = APIRouter(tags=["Routes"], prefix="/api/v1/shortest_path/routes")
 
@@ -35,7 +33,6 @@ async def get_route(
 async def create_shortest_path(
     info: Info,
     user: User = Depends(get_current_user),
-    session: Session = Depends(get_session_dependency),
 ):
     if len(info.addresses_ids) < 3:
         raise HTTPException(
@@ -43,16 +40,9 @@ async def create_shortest_path(
             detail="the number of vertices is less than 3",
         )
 
-    legal_addresses = get_addresses_by_id_list(session, info.addresses_ids)
-    coordinates_dict = external_api.get_coordinates(legal_addresses)
-    edges_list = external_api.get_distances(coordinates_dict)
-    data = graph_api.get_min_hamiltonian_cycle(edges_list)
-    data["executor"] = info.executor
-    data["execution_date"] = info.execution_date
+    route_task.create.delay(info.model_dump(), user.id)
 
-    route = crud.create_route(session, user, data)
-    msg = "SUCCESS: The shortest path has been successfully found"
-    return {"message": msg, "shortest_path": route}
+    return {"message": "Success: the request has been accepted for processing"}
 
 
 @router.delete("/{route_id}/", description="Удалить маршрут")
@@ -72,7 +62,7 @@ async def delete_route(
 
 
 # TODO: переделать
-@router.patch("/{route_id}/", description="Изменить статус продвижения по маршруту")
+# @router.patch("/{route_id}/", description="Изменить статус продвижения по маршруту")
 async def update_route_status(
         route_id: int,
         user: User = Depends(get_current_user),

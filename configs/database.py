@@ -36,4 +36,3 @@ async_session_factory = async_sessionmaker(
 def get_session_dependency():
     with session_factory() as session:
         yield session
-        session.close()

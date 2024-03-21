@@ -98,10 +98,10 @@ class Position(Base):
     pos: Mapped[int] = mapped_column(nullable=False)
     status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
     address_id: Mapped[int] = mapped_column(
-        ForeignKey("addresses.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("addresses.id", ondelete="CASCADE")
     )
     route_id: Mapped[int] = mapped_column(
-        ForeignKey("routes.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("routes.id", ondelete="CASCADE")
     )
 
     route: Mapped["Route"] = relationship(back_populates="positions")
