@@ -27,6 +27,19 @@ class Base(DeclarativeBase):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
+    repr_cols_num = 3
+    repr_cols = tuple()
+
+    def __repr__(self):
+        """Relationships не используются в repr(), т.к. могут вести к неожиданным подгрузкам"""
+        cols = []
+        for idx, col in enumerate(self.__table__.columns.keys()):
+            if col in self.repr_cols or idx < self.repr_cols_num:
+                cols.append(f"{col}={getattr(self, col)}")
+
+        return f"<{self.__class__.__name__} {', '.join(cols)}>"
+
+
 
 class User(Base):
     __tablename__ = "users"
@@ -98,10 +111,10 @@ class Position(Base):
     pos: Mapped[int] = mapped_column(nullable=False)
     status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
     address_id: Mapped[int] = mapped_column(
-        ForeignKey("addresses.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("addresses.id", ondelete="CASCADE")
     )
     route_id: Mapped[int] = mapped_column(
-        ForeignKey("routes.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("routes.id", ondelete="CASCADE")
     )
 
     route: Mapped["Route"] = relationship(back_populates="positions")
