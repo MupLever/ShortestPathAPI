@@ -6,7 +6,7 @@ from api_v1.addresses.crud import get_addresses_by_id_list
 from api_v1.routes import crud
 from api_v1.auth.utils import get_current_user
 from api_v1.routes.schemas import Info
-from api_v1.routes.utils import graph_api, external_api
+from utils import external_api, graph_api
 from app.models import User
 
 from configs.database import get_session_dependency

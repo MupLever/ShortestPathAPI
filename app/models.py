@@ -40,7 +40,6 @@ class Base(DeclarativeBase):
         return f"<{self.__class__.__name__} {', '.join(cols)}>"
 
 
-
 class User(Base):
     __tablename__ = "users"
 
