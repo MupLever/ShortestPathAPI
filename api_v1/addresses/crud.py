@@ -8,13 +8,12 @@ from app.models import Address
 
 def get_address_by_part(session: Session, part_address: str) -> List[Type[Address]]:
     columns = (Address.district, Address.city, Address.street, Address.house_number)
-    stmt = select(Address.id, *columns)
-    values = part_address.replace(',', ' ').split(' ')
-    conditions = [column.startswith(value) for column in columns for value in values]
-    stmt = stmt.where(or_(*conditions))
+    values = part_address.split(' ')
+    filters = [column.startswith(value) for column in columns for value in values]
 
-    addresses = session.query(Address).from_statement(stmt).all()[:10]
-    return addresses
+    stmt = select(Address.id, *columns).where(or_(*filters))
+
+    return session.query(Address).from_statement(stmt).all()[:6]
 
 
 def get_addresses_by_id_list(

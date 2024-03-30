@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 
 class Geocoordinates(BaseModel):
-    lat: int
-    lng: int
+    lat: str
+    lng: str
 
 
 class Info(BaseModel):
