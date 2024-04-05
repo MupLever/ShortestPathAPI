@@ -7,7 +7,7 @@ from configs.database import get_session_dependency
 from utils import external_api, graph_api
 
 
-celery = Celery('tasks', broker='redis://localhost:6379')
+celery = Celery("tasks", broker="redis://localhost:6379")
 
 
 @celery.task

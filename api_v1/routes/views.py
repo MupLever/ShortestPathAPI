@@ -64,9 +64,9 @@ async def delete_route(
 # TODO: переделать
 # @router.patch("/{route_id}/", description="Изменить статус продвижения по маршруту")
 async def update_route_status(
-        route_id: int,
-        user: User = Depends(get_current_user),
-        session: Session = Depends(get_session_dependency),
+    route_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session_dependency),
 ):
     route = crud.get_route(session, user, route_id)
 

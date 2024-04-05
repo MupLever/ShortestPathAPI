@@ -1,3 +1,4 @@
+import enum
 import os
 
 from dotenv import load_dotenv
@@ -8,6 +9,17 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 
 BASE_DIR = Path(__file__).parent.parent
+
+
+class Status(enum.Enum):
+    pending = "pending"
+    done = "done"
+    canceled = "canceled"
+
+
+class Category(enum.Enum):
+    lightweight = "lightweight"
+    heavy = "heavy"
 
 
 class AuthJWT(BaseModel):

@@ -1,4 +1,3 @@
-import dataclasses
 from typing import List, Dict, Type
 
 from requests import request

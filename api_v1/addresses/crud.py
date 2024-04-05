@@ -8,7 +8,7 @@ from app.models import Address
 
 def get_address_by_part(session: Session, part_address: str) -> List[Type[Address]]:
     columns = (Address.district, Address.city, Address.street, Address.house_number)
-    values = part_address.split(' ')
+    values = part_address.split(" ")
     filters = [column.startswith(value) for column in columns for value in values]
 
     stmt = select(Address.id, *columns).where(or_(*filters))
