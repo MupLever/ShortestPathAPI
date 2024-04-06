@@ -19,18 +19,13 @@ def create(session: Session, order_dict: dict) -> Order:
 
 
 def get_orders(session: Session) -> List[Order]:
-    query = (
-        select(Order)
-        .options(selectinload(Order.products))
-    )
+    query = select(Order).options(selectinload(Order.products))
     return list(session.execute(query).scalars().all())
 
 
 def get_order(session: Session, order_id: int) -> Optional[Order]:
     query = (
-        select(Order)
-        .where(Order.id == order_id)
-        .options(selectinload(Order.products))
+        select(Order).where(Order.id == order_id).options(selectinload(Order.products))
     )
     return session.execute(query).scalars().first()
 

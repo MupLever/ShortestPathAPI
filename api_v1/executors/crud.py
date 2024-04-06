@@ -34,7 +34,7 @@ def get_executor(session: Session, executor_id: int) -> Optional[Executor]:
 
 
 def get_executors_by(
-        session: Session, category: Category, part_fullname: str
+    session: Session, category: Category, part_fullname: str
 ) -> List[Type[Executor]]:
     return list(
         session.query(Executor)
