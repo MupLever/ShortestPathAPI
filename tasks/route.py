@@ -1,9 +1,10 @@
 from celery import Celery
 
 from app.models import User
-from api_v1.addresses.crud import get_addresses_by_id_list
+
 from api_v1.routes import crud
 from configs.database import get_session_dependency
+from configs.orm import get_addresses_by_id_list
 from utils import external_api, graph_api
 
 

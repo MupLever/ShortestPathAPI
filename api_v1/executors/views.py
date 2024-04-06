@@ -7,16 +7,28 @@ from api_v1.executors import crud
 from api_v1.executors.schemas import ExecutorCreate
 from app.models import User
 from configs.database import get_session_dependency
+from configs.settings import Category
 
 router = APIRouter(tags=["Executors"], prefix="/api/v1/shortest_path/executors")
 
 
 @router.get("/", description="")
-async def get_executors(
+async def get_executors_by(
+    part_fullname: str,
+    category: Category,
     _: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    return crud.get_executors(session)
+    return crud.get_executors_by(session, category, part_fullname)
+
+
+@router.get("/", description="")
+async def get_executors(
+    category: Category,
+    _: User = Depends(get_current_user),
+    session: Session = Depends(get_session_dependency),
+):
+    return crud.get_executors(session, category)
 
 
 @router.post("/", description="")

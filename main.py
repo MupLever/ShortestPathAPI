@@ -9,6 +9,7 @@ from api_v1.users.views import router as users_router
 from api_v1.addresses.views import router as addresses_router
 from api_v1.executors.views import router as executors_router
 from api_v1.orders.views import router as orders_router
+from api_v1.categories.views import router as categories_router
 
 app = FastAPI(title="Shortest Path API", version="1.0.0")
 
@@ -18,6 +19,7 @@ app.include_router(router=users_router)
 app.include_router(router=executors_router)
 app.include_router(router=orders_router)
 app.include_router(router=addresses_router)
+app.include_router(router=categories_router)
 
 
 origins = [

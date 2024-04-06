@@ -7,9 +7,7 @@ from api_v1.orders.schemas import OrderCreate
 from app.models import Product, Order
 
 
-def create(session: Session, order: OrderCreate) -> Order:
-    order_dict = order.model_dump()
-
+def create(session: Session, order_dict: dict) -> Order:
     products = map(lambda product: Product(**product), order_dict.pop("products"))
     order = Order(**order_dict)
     for product in products:

@@ -50,19 +50,9 @@ class Address(Base):
     # routes: Mapped[List["Route"]] = relationship(
     #     back_populates="addresses", secondary="positions"
     # )
+
     orders: Mapped[List["Order"]] = relationship(back_populates="address")
     # positions: Mapped[List["Position"]] = relationship(back_populates="address")
-
-
-# class Geocoordinates(Base):
-#     __tablename__ = "geocoordinates"
-#
-#     latitude: Mapped[float] = mapped_column()
-#     longitude: Mapped[float] = mapped_column()
-#
-#     address_id: Mapped[int] = mapped_column(
-#         ForeignKey("addresses.id", ondelete="CASCADE")
-#     )
 
 
 class Route(Base):
@@ -107,6 +97,7 @@ class Executor(Base):
     __tablename__ = "executors"
 
     fullname: Mapped[str] = mapped_column(nullable=False)
+    age: Mapped[int] = mapped_column(nullable=False)
     category: Mapped[Category] = mapped_column(nullable=False)
     workload: Mapped[bool] = mapped_column(nullable=False, server_default=text("False"))
     is_active: Mapped[bool] = mapped_column(nullable=False, server_default=text("True"))
@@ -117,8 +108,10 @@ class Executor(Base):
 class Order(Base):
     __tablename__ = "orders"
 
+    number: Mapped[int] = mapped_column(nullable=False)
     client: Mapped[str] = mapped_column(nullable=False)
     expected_date: Mapped[datetime] = mapped_column(nullable=False)
+    in_progres: Mapped[bool] = mapped_column(nullable=False, server_default="False")
 
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
 
@@ -140,3 +133,14 @@ class Product(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
 
     order: Mapped["Order"] = relationship(back_populates="products")
+
+
+# class Geocoordinates(Base):
+#     __tablename__ = "geocoordinates"
+#
+#     latitude: Mapped[float] = mapped_column()
+#     longitude: Mapped[float] = mapped_column()
+#
+#     address_id: Mapped[int] = mapped_column(
+#         ForeignKey("addresses.id", ondelete="CASCADE")
+#     )

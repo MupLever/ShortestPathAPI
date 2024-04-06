@@ -17,7 +17,8 @@ class Product(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    products: List[Product]
+    number: int
     client: str
     expected_date: datetime
     address_id: int
+    products: List[Product]
