@@ -2,9 +2,9 @@ import asyncio
 from typing import List, Type
 
 from sqlalchemy import text, select, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from app.models import Address
+from app.models import Address, Order
 from configs.database import session_factory, async_session_factory
 
 
@@ -18,10 +18,15 @@ def get_address_by_part(session: Session, part_address: str) -> List[Type[Addres
     return session.query(Address).from_statement(stmt).all()[:6]
 
 
-def get_addresses_by_id_list(
-    session: Session, addresses_identifiers: List[int]
-) -> List[Type[Address]]:
-    return session.query(Address).where(Address.id.in_(addresses_identifiers)).all()
+def get_addresses_by_order_id_list(
+    session: Session, orders_identifiers: List[int]
+) -> List[Type[Order]]:
+    return (
+        session.query(Order)
+        .options(joinedload(Order.address))
+        .where(Order.id.in_(orders_identifiers))
+        .all()
+    )
 
 
 async def get_version():

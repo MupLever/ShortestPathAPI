@@ -22,15 +22,6 @@ async def get_executors_by(
     return crud.get_executors_by(session, category, part_fullname)
 
 
-@router.get("/", description="")
-async def get_executors(
-    category: Category,
-    _: User = Depends(get_current_user),
-    session: Session = Depends(get_session_dependency),
-):
-    return crud.get_executors(session, category)
-
-
 @router.post("/", description="")
 async def create_executor(
     executor: ExecutorCreate,

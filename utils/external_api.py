@@ -3,24 +3,24 @@ from typing import List, Dict, Type
 from requests import request
 
 from api_v1.routes.schemas import Geocoordinates
-from app.models import Address, model_dump
+from app.models import model_dump, Order
 from utils.graph import EdgesList
 
 
 def get_coordinates(
-    legal_addresses: List[Type[Address]],
+    orders: List[Type[Order]],
 ) -> Dict[int, Geocoordinates]:
     coordinates_dict = {}
-    for legal_address in legal_addresses:
-        address_dict = model_dump(legal_address)
-        address_id = address_dict.pop("id")
+    for order in orders:
+        address_dict = model_dump(order.address)
+        address_dict.pop("id")
 
         response = request(
             url="http://localhost:8001/api/v1/geocoder/",
             method="POST",
             json=address_dict,
         )
-        coordinates_dict[address_id] = response.json().get("coordinates")
+        coordinates_dict[order.id] = response.json().get("coordinates")
 
     return coordinates_dict
 

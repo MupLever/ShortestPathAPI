@@ -60,21 +60,20 @@ class Route(Base):
 
     total_duration: Mapped[int] = mapped_column(nullable=False)
     execution_date: Mapped[datetime] = mapped_column(nullable=False)
+
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
+
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
     )
     updated_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())"), onupdate=datetime.utcnow
     )
-    executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
 
     user: Mapped["User"] = relationship(back_populates="routes")
     executor: Mapped["Executor"] = relationship(back_populates="routes")
     positions: Mapped[List["Position"]] = relationship(back_populates="route")
-    # addresses: Mapped[List["Address"]] = relationship(
-    #     back_populates="routes", secondary="positions"
-    # )
 
 
 class Position(Base):
@@ -82,15 +81,12 @@ class Position(Base):
 
     duration: Mapped[int] = mapped_column(nullable=False)
     pos: Mapped[int] = mapped_column(nullable=False)
-    status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
 
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
-
     route_id: Mapped[int] = mapped_column(ForeignKey("routes.id", ondelete="CASCADE"))
 
     route: Mapped["Route"] = relationship(back_populates="positions")
     order: Mapped["Order"] = relationship(back_populates="position")
-    # address: Mapped["Address"] = relationship(back_populates="positions")
 
 
 class Executor(Base):
@@ -111,7 +107,7 @@ class Order(Base):
     number: Mapped[int] = mapped_column(nullable=False)
     client: Mapped[str] = mapped_column(nullable=False)
     expected_date: Mapped[datetime] = mapped_column(nullable=False)
-    in_progres: Mapped[bool] = mapped_column(nullable=False, server_default="False")
+    status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
 
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
 

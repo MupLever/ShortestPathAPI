@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 # import pandas as pd
 from starlette import status
@@ -10,16 +11,19 @@ from api_v1.orders import crud
 from api_v1.orders.schemas import OrderCreate
 from app.models import User
 from configs.database import get_session_dependency
+from configs.settings import Category
 
 router = APIRouter(tags=["Orders"], prefix="/api/v1/shortest_path/orders")
 
 
 @router.get("/", description="")
-async def get(
+async def get_orders(
+    date: datetime,
+    category: Category,
     _: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    return crud.get_orders(session)
+    return crud.get_orders(session, date, category)
 
 
 @router.post("/", description="")

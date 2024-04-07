@@ -297,7 +297,7 @@ class HamiltonianGraph(HashTableGraph):
                 f"The graph doesn't contain vertices with this value={start_value}"
             )
 
-        data["path"].append({"address": start_node.value, "duration": 0})
+        data["path"].append({"node": start_node.value, "duration": 0})
 
         cur_node = start_node
         passed = {cur_node}
@@ -311,7 +311,7 @@ class HamiltonianGraph(HashTableGraph):
             if duration is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            data["path"].append({"address": nearest_node.value, "duration": duration})
+            data["path"].append({"node": nearest_node.value, "duration": duration})
             data["total_duration"] += duration
             passed.add(nearest_node)
             cur_node = nearest_node
@@ -320,7 +320,7 @@ class HamiltonianGraph(HashTableGraph):
         if duration is None:
             return Status.ERROR, {"path": [], "total_duration": 0}
 
-        data["path"].append({"address": start_node.value, "duration": duration})
+        data["path"].append({"node": start_node.value, "duration": duration})
         data["total_duration"] += duration
 
         return Status.OK, data

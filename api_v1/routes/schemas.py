@@ -3,6 +3,8 @@ from typing import List
 
 from pydantic import BaseModel
 
+from configs.settings import Category
+
 
 class Geocoordinates(BaseModel):
     lat: str
@@ -10,6 +12,7 @@ class Geocoordinates(BaseModel):
 
 
 class Info(BaseModel):
-    addresses_ids: List[int]
-    executor: str
+    orders_ids: List[int]
+    category: Category
+    executor_id: int
     execution_date: datetime

@@ -12,7 +12,7 @@ def get_routes(session: Session, user: User) -> List[Route]:
         .options(
             selectinload(Route.positions)
             .joinedload(Position.order)
-            .selectinload(Order.products)
+            .joinedload(Order.address)
         )
     )
     return list(session.execute(query).scalars().all())
@@ -26,7 +26,7 @@ def get_route(session: Session, user: User, route_id: int) -> Optional[Route]:
         .options(
             selectinload(Route.positions)
             .joinedload(Position.order)
-            .selectinload(Order.products)
+            .joinedload(Order.address)
         )
     )
     return session.execute(query).scalars().first()
@@ -37,7 +37,7 @@ def create_route(session: Session, user: User, data: Dict[str, Any]) -> Route:
     route = Route(**data)
     for pos, node in enumerate(path):
         route.positions.append(
-            Position(duration=node["duration"], pos=pos, address_id=node["address"])
+            Position(duration=node["duration"], pos=pos, order_id=node["node"])
         )
 
     user.routes.append(route)
@@ -49,14 +49,4 @@ def create_route(session: Session, user: User, data: Dict[str, Any]) -> Route:
 def delete_route(session: Session, route: Route) -> Route:
     session.delete(route)
     session.commit()
-    return route
-
-
-# TODO: переделать
-def update_route(session: Session, route: Route, data_update: Dict[str, Any]) -> Route:
-    for name, value in data_update.items():
-        setattr(route, name, value)
-
-    session.commit()
-    session.refresh(route)
     return route
