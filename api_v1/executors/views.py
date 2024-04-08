@@ -13,13 +13,17 @@ router = APIRouter(tags=["Executors"], prefix="/api/v1/shortest_path/executors")
 
 
 @router.get("/", description="")
-async def get_executors_by(
-    part_fullname: str,
-    category: Category,
+async def get_executors_by_filters(
+    all_: bool,
+    category: Category = Category.lightweight,
+    part_fullname: str = "",
     _: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    return crud.get_executors_by(session, category, part_fullname)
+    if all_:
+        return crud.get_executors(session)
+
+    return crud.get_executors_by_filters(session, category, part_fullname)
 
 
 @router.post("/", description="")

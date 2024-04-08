@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models import Address, Order
 from configs.database import session_factory, async_session_factory
+from configs.settings import Status
 
 
 def get_address_by_part(session: Session, part_address: str) -> List[Type[Address]]:
@@ -18,15 +19,21 @@ def get_address_by_part(session: Session, part_address: str) -> List[Type[Addres
     return session.query(Address).from_statement(stmt).all()[:6]
 
 
-def get_addresses_by_order_id_list(
+def get_orders_by_order_id_list(
     session: Session, orders_identifiers: List[int]
 ) -> List[Type[Order]]:
-    return (
+    orders = (
         session.query(Order)
         .options(joinedload(Order.address))
         .where(Order.id.in_(orders_identifiers))
         .all()
     )
+    # for order in orders:
+    #     order.status = Status.done
+    #
+    # session.commit()
+    # session.refresh(orders)
+    return orders
 
 
 async def get_version():
