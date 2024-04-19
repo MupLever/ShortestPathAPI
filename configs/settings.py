@@ -22,6 +22,14 @@ class Category(enum.Enum):
     heavy = "heavy"
 
 
+class Transport(enum.Enum):
+    auto = "auto"
+    mt = "mt"
+    pd = "pd"
+    bc = "bc"
+    sc = "sc"
+
+
 class AuthJWT(BaseModel):
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"

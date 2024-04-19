@@ -4,11 +4,12 @@ from requests import request
 
 from api_v1.routes.schemas import Geocoordinates
 from app.models import model_dump, Order
+from configs.settings import Category
 from utils.graph import EdgesList
 
 
 def get_coordinates(
-    orders: List[Type[Order]],
+        orders: List[Type[Order]],
 ) -> Dict[int, Geocoordinates]:
     coordinates_dict = {}
     for order in orders:
@@ -25,10 +26,11 @@ def get_coordinates(
     return coordinates_dict
 
 
-def get_distances(coordinates_dict: Dict[int, Geocoordinates]) -> EdgesList:
+def get_distances(coordinates_dict: Dict[int, Geocoordinates], category: Category) -> EdgesList:
     edges_list = EdgesList()
     passed_addr = set()
     for addr1, coord1 in coordinates_dict.items():
+
         passed_addr.add(addr1)
         for addr2, coord2 in coordinates_dict.items():
             if addr2 in passed_addr:
@@ -42,10 +44,15 @@ def get_distances(coordinates_dict: Dict[int, Geocoordinates]) -> EdgesList:
                     "destination": {**coord2},
                 },
             )
-            duration: int = response.json().get("duration")
 
-            edges_list.add_edge(addr1, addr2, duration)
+            durations = response.json().get("duration")
+            transport, duration = "auto", durations.pop("auto")
 
-            edges_list.add_edge(addr2, addr1, duration)
+            if category == Category.lightweight:
+                transport, duration = min(durations.items(), key=lambda item: item[1])
+
+            edges_list.add_edge(addr1, addr2, duration, transport)
+
+            edges_list.add_edge(addr2, addr1, duration, transport)
 
     return edges_list

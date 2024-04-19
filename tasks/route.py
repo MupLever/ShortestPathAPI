@@ -18,7 +18,7 @@ def create(info: dict, user_id: int) -> None:
 
     orders = get_orders_by_order_id_list(session, info["orders_ids"])
     coordinates_dict = external_api.get_coordinates(orders)
-    edges_list = external_api.get_distances(coordinates_dict)
+    edges_list = external_api.get_distances(coordinates_dict, info["category"])
     data = graph_api.get_min_hamiltonian_cycle(edges_list)
 
     data["executor_id"] = info["executor_id"]

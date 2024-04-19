@@ -9,7 +9,7 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from configs.settings import Status, Category
+from configs.settings import Status, Category, Transport
 
 
 def model_dump(row):
@@ -81,6 +81,7 @@ class Position(Base):
 
     duration: Mapped[int] = mapped_column(nullable=False)
     pos: Mapped[int] = mapped_column(nullable=False)
+    transport: Mapped[Transport] = mapped_column(nullable=False)
 
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
     route_id: Mapped[int] = mapped_column(ForeignKey("routes.id", ondelete="CASCADE"))
