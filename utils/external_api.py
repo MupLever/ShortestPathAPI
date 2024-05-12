@@ -51,6 +51,9 @@ def get_distances(coordinates_dict: Dict[int, Geocoordinates], category: Categor
             if category == Category.lightweight:
                 transport, duration = min(durations.items(), key=lambda item: item[1])
 
+            if all([d == duration for d in durations.values()]):
+                transport = "pd"
+
             edges_list.add_edge(addr1, addr2, duration, transport)
 
             edges_list.add_edge(addr2, addr1, duration, transport)

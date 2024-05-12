@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import select, not_, func
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload, joinedload
 
 from app.models import Product, Order

@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 from typing import List, Dict, Any, Optional
 
 from app.models import Route, User, Position, Order
@@ -9,6 +9,7 @@ def get_routes(session: Session, user: User) -> List[Route]:
     query = (
         select(Route)
         .where(Route.user_id == user.id)
+        .options(joinedload(Route.executor))
         .options(
             selectinload(Route.positions)
             .joinedload(Position.order)
@@ -23,11 +24,13 @@ def get_route(session: Session, user: User, route_id: int) -> Optional[Route]:
         select(Route)
         .where(Route.id == route_id)
         .where(Route.user_id == user.id)
+        .options(joinedload(Route.executor))
         .options(
             selectinload(Route.positions)
             .joinedload(Position.order)
             .joinedload(Order.address)
         )
+        .options(joinedload(Route.address))
     )
     return session.execute(query).scalars().first()
 

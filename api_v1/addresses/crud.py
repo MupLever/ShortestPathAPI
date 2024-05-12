@@ -11,9 +11,9 @@ def get_address_by_part(session: Session, part_address: str) -> List[Type[Addres
     values = part_address.split(" ")
     filters = [column.startswith(value) for column in columns for value in values]
 
-    stmt = select(Address.id, *columns).where(or_(*filters))
+    stmt = select(Address.id, *columns).where(or_(*filters)).limit(6)
 
-    return session.query(Address).from_statement(stmt).all()[:6]
+    return session.query(Address).from_statement(stmt).all()
 
 
 def get_addresses_by_id_list(

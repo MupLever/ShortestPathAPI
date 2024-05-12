@@ -289,7 +289,7 @@ class HamiltonianGraph(HashTableGraph):
 
         return edge_to_nearest_node.incident_node
 
-    def get_hamiltonian_cycle(self, *, start_value: Any = None) -> (int, dict):
+    def get_hamiltonian_cycle(self, *, chain: bool = False, start_value: Any = None) -> (int, dict):
         """finds a suboptimal Hamiltonian cycle"""
 
         data = {"path": [], "total_duration": 0}
@@ -324,11 +324,12 @@ class HamiltonianGraph(HashTableGraph):
             passed.add(nearest_node)
             cur_node = nearest_node
 
-        edge = self._get_edge_between(start_node, cur_node)
-        if edge is None:
-            return Status.ERROR, {"path": [], "total_duration": 0}
+        if not chain:
+            edge = self._get_edge_between(start_node, cur_node)
+            if edge is None:
+                return Status.ERROR, {"path": [], "total_duration": 0}
 
-        data["path"].append({"node": start_node.value, "duration": edge.weight, "transport": edge.transport})
-        data["total_duration"] += edge.weight
+            data["path"].append({"node": start_node.value, "duration": edge.weight, "transport": edge.transport})
+            data["total_duration"] += edge.weight
 
         return Status.OK, data

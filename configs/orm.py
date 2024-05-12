@@ -1,11 +1,10 @@
 import asyncio
-from typing import List, Type
+from typing import List, Type, Optional
 
-from sqlalchemy import text, select, or_
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Address, Order
-from configs.database import session_factory, async_session_factory
 from configs.settings import Status
 
 
@@ -14,9 +13,13 @@ def get_address_by_part(session: Session, part_address: str) -> List[Type[Addres
     values = part_address.split(" ")
     filters = [column.startswith(value) for column in columns for value in values]
 
-    stmt = select(Address.id, *columns).where(or_(*filters))
+    stmt = select(Address.id, *columns).where(or_(*filters)).limit(6)
 
-    return session.query(Address).from_statement(stmt).all()[:6]
+    return session.query(Address).from_statement(stmt).all()
+
+
+def get_address_by_id(session: Session, address_id: int) -> Optional[Address]:
+    return session.query(Address).get(address_id)
 
 
 def get_orders_by_order_id_list(
@@ -34,17 +37,3 @@ def get_orders_by_order_id_list(
     # session.commit()
     # session.refresh(orders)
     return orders
-
-
-async def get_version():
-    async with async_session_factory() as session:
-        res = await session.execute(text("SELECT VERSION();"))
-        print(f"{res.first()=}")
-
-
-if __name__ == "__main__":
-    with session_factory() as session:
-        res = session.execute(text("SELECT VERSION();"))
-        print(f"{res.first()=}")
-
-    asyncio.get_event_loop().run_until_complete(get_version())

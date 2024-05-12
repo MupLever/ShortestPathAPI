@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from configs.settings import Category
 
@@ -12,7 +12,8 @@ class Geocoordinates(BaseModel):
 
 
 class Info(BaseModel):
+    address_id: int = Field(gt=0)
     orders_ids: List[int]
     category: Category
-    executor_id: int
+    executor_id: int = Field(gt=0)
     execution_date: datetime

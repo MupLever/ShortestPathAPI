@@ -63,6 +63,7 @@ class Route(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
+    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
 
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
@@ -73,6 +74,7 @@ class Route(Base):
 
     user: Mapped["User"] = relationship(back_populates="routes")
     executor: Mapped["Executor"] = relationship(back_populates="routes")
+    address: Mapped["Address"] = relationship()
     positions: Mapped[List["Position"]] = relationship(back_populates="route")
 
 
@@ -95,6 +97,8 @@ class Executor(Base):
 
     fullname: Mapped[str] = mapped_column(nullable=False)
     age: Mapped[int] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False)
+    passport: Mapped[str] = mapped_column(nullable=False)
     category: Mapped[Category] = mapped_column(nullable=False)
     workload: Mapped[bool] = mapped_column(nullable=False, server_default=text("False"))
     is_active: Mapped[bool] = mapped_column(nullable=False, server_default=text("True"))
@@ -102,11 +106,19 @@ class Executor(Base):
     routes: Mapped[List["Route"]] = relationship(back_populates="executor")
 
 
+class Workload(Base):
+    __tablename__ = "workloads"
+
+    executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
+    date: Mapped[datetime] = mapped_column(nullable=False)
+
+
 class Order(Base):
     __tablename__ = "orders"
 
     number: Mapped[int] = mapped_column(nullable=False)
     client: Mapped[str] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False)
     expected_date: Mapped[datetime] = mapped_column(nullable=False)
     status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
 
@@ -124,6 +136,7 @@ class Product(Base):
     category: Mapped[Category] = mapped_column(nullable=False)
     count: Mapped[int] = mapped_column(nullable=False)
     weight: Mapped[float] = mapped_column(nullable=False)
+    # volume: Mapped[float] = mapped_column(nullable=False)
     article_number: Mapped[int] = mapped_column(nullable=False)
     hazard_class: Mapped[int] = mapped_column(nullable=False)
     expiration_date: Mapped[datetime] = mapped_column(nullable=False)
