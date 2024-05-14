@@ -13,7 +13,8 @@ router = APIRouter(tags=["Users"], prefix="/api/v1/shortest_path/users")
 
 @router.post("/", description="Создать пользователя")
 async def create_user(
-    user: UserCreate, session: Session = Depends(get_session_dependency)
+    user: UserCreate,
+    session: Session = Depends(get_session_dependency)
 ):
     return crud.create_user(session, user)
 
