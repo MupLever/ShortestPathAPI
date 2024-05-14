@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from configs.settings import Category
+from app.types import Category
 
 
 class Geocoordinates(BaseModel):

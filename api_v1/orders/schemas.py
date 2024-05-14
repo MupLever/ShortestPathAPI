@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from configs.settings import Category
+from app.types import Category
 
 
 class Product(BaseModel):

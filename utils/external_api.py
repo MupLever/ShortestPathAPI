@@ -4,12 +4,12 @@ from requests import request
 
 from api_v1.routes.schemas import Geocoordinates
 from app.models import model_dump, Order
-from configs.settings import Category
+from app.types import Category
 from utils.graph import EdgesList
 
 
 def get_coordinates(
-        orders: List[Type[Order]],
+    orders: List[Type[Order]],
 ) -> Dict[int, Geocoordinates]:
     coordinates_dict = {}
     for order in orders:
@@ -26,7 +26,9 @@ def get_coordinates(
     return coordinates_dict
 
 
-def get_distances(coordinates_dict: Dict[int, Geocoordinates], category: Category) -> EdgesList:
+def get_distances(
+    coordinates_dict: Dict[int, Geocoordinates], category: Category
+) -> EdgesList:
     edges_list = EdgesList()
     passed_addr = set()
     for addr1, coord1 in coordinates_dict.items():

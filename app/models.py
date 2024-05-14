@@ -9,7 +9,7 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from configs.settings import Status, Category, Transport
+from app.types import Role, Status, Category, Transport
 
 
 def model_dump(row):
@@ -29,6 +29,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(server_default=text("True"))
     password: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[Role] = mapped_column(
+        nullable=False, server_default=Role.dispatcher.name
+    )
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
     )
@@ -97,11 +100,11 @@ class Executor(Base):
 
     fullname: Mapped[str] = mapped_column(nullable=False)
     age: Mapped[int] = mapped_column(nullable=False)
-    phone_number: Mapped[str] = mapped_column(nullable=False)
-    passport: Mapped[str] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False, unique=True)
+    passport: Mapped[str] = mapped_column(nullable=False, unique=True)
     category: Mapped[Category] = mapped_column(nullable=False)
-    workload: Mapped[bool] = mapped_column(nullable=False, server_default=text("False"))
-    is_active: Mapped[bool] = mapped_column(nullable=False, server_default=text("True"))
+    workload: Mapped[bool] = mapped_column(nullable=False, server_default="False")
+    is_active: Mapped[bool] = mapped_column(nullable=False, server_default="True")
 
     routes: Mapped[List["Route"]] = relationship(back_populates="executor")
 
@@ -116,11 +119,11 @@ class Workload(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    number: Mapped[int] = mapped_column(nullable=False)
+    number: Mapped[int] = mapped_column(nullable=False, unique=True)
     client: Mapped[str] = mapped_column(nullable=False)
-    phone_number: Mapped[str] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False, unique=True)
     expected_date: Mapped[datetime] = mapped_column(nullable=False)
-    status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
+    status: Mapped[Status] = mapped_column(server_default=Status.pending.name)
 
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
 

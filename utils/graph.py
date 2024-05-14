@@ -7,55 +7,16 @@ for searching for a Hamiltonian cycle
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Iterable, Tuple, Set
+from typing import Any, Iterable, Tuple, Set, Iterator
 from queue import Queue
 from random import choice
 
-from configs.settings import Transport
+from app.types import Transport
 
 
 class Status(Enum):
     OK: int = 0
     ERROR: int = 1
-
-
-class EdgesList:
-    class Edge:
-        def __init__(self, node_from: Any, node_to: Any, weight: int, transport: Transport):
-            self.node_from = node_from
-            self.node_to = node_to
-            self.weight = weight
-            self.transport = transport
-
-        def __radd__(self, other):
-            return self.weight + other
-
-        @property
-        def tuple(self) -> tuple:
-            return self.node_from, self.node_to, self.weight, self.transport
-
-    def __init__(self):
-        self.edges_list: list = []
-
-    def __iter__(self):
-        return iter(self.edges_list)
-
-    def add_edge(self, value_from: Any, value_to: Any, weight: int, transport: Transport) -> None:
-        edge = self.Edge(value_from, value_to, weight, transport)
-        self.edges_list.append(edge)
-
-    def sort(self, desc: bool = False) -> None:
-        self.edges_list.sort(key=lambda edge: -edge.weight if desc else edge.weight)
-
-    def sum(self):
-        return sum(self.edges_list)
-
-    def to_hamiltonian_graph(self) -> HamiltonianGraph:
-        graph = HamiltonianGraph()
-        for edge in self.edges_list:
-            graph.add_edge(edge.node_from, edge.node_to, edge.weight, edge.transport)
-
-        return graph
 
 
 class MatrixGraph:
@@ -85,6 +46,56 @@ class MatrixGraph:
     def traverse(self) -> None:
         for row in self.matrix:
             print(row, end="\n")
+
+
+class EdgesList:
+    class Edge:
+        def __init__(
+            self, node_from: Any, node_to: Any, weight: int, transport: Transport
+        ) -> None:
+            self.node_from = node_from
+            self.node_to = node_to
+            self.weight = weight
+            self.transport = transport
+
+        def __radd__(self, other) -> int:
+            return self.weight + other
+
+        @property
+        def tuple(self) -> tuple:
+            return self.node_from, self.node_to, self.weight, self.transport
+
+    def __init__(self) -> None:
+        self.edges_list: list = []
+        self._nodes = set()
+
+    @property
+    def n_vertex(self) -> int:
+        return len(self._nodes)
+
+    def __iter__(self) -> Iterator:
+        return iter(self.edges_list)
+
+    def add_edge(
+        self, value_from: Any, value_to: Any, weight: int, transport: Transport
+    ) -> None:
+        self._nodes.update({value_from, value_to})
+
+        edge = self.Edge(value_from, value_to, weight, transport)
+        self.edges_list.append(edge)
+
+    def sort(self, desc: bool = False) -> None:
+        self.edges_list.sort(key=lambda edge: -edge.weight if desc else edge.weight)
+
+    def sum(self) -> int:
+        return sum(self.edges_list)
+
+    def to_hamiltonian_graph(self) -> HamiltonianGraph:
+        graph = HamiltonianGraph()
+        for edge in self.edges_list:
+            graph.add_edge(edge.node_from, edge.node_to, edge.weight, edge.transport)
+
+        return graph
 
 
 class HashTableGraph:
@@ -149,7 +160,9 @@ class HashTableGraph:
 
         return self.graph[value]
 
-    def add_edge(self, value_from: Any, value_to: Any, weight: int, transport: Transport) -> None:
+    def add_edge(
+        self, value_from: Any, value_to: Any, weight: int, transport: Transport
+    ) -> None:
         node_from = self.add_or_get_node(value_from)
         node_to = self.add_or_get_node(value_to)
 
@@ -289,7 +302,9 @@ class HamiltonianGraph(HashTableGraph):
 
         return edge_to_nearest_node.incident_node
 
-    def get_hamiltonian_cycle(self, *, chain: bool = False, start_value: Any = None) -> (int, dict):
+    def get_hamiltonian_cycle(
+        self, *, chain: bool = False, start_value: Any = None
+    ) -> (int, dict):
         """finds a suboptimal Hamiltonian cycle"""
 
         data = {"path": [], "total_duration": 0}
@@ -305,7 +320,9 @@ class HamiltonianGraph(HashTableGraph):
                 f"The graph doesn't contain vertices with this value={start_value}"
             )
 
-        data["path"].append({"node": start_node.value, "duration": 0, "transport": Transport.pd.value})
+        data["path"].append(
+            {"node": start_node.value, "duration": 0, "transport": Transport.pd.value}
+        )
 
         cur_node = start_node
         passed = {cur_node}
@@ -319,7 +336,13 @@ class HamiltonianGraph(HashTableGraph):
             if edge is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            data["path"].append({"node": nearest_node.value, "duration": edge.weight, "transport": edge.transport})
+            data["path"].append(
+                {
+                    "node": nearest_node.value,
+                    "duration": edge.weight,
+                    "transport": edge.transport,
+                }
+            )
             data["total_duration"] += edge.weight
             passed.add(nearest_node)
             cur_node = nearest_node
@@ -329,7 +352,13 @@ class HamiltonianGraph(HashTableGraph):
             if edge is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            data["path"].append({"node": start_node.value, "duration": edge.weight, "transport": edge.transport})
+            data["path"].append(
+                {
+                    "node": start_node.value,
+                    "duration": edge.weight,
+                    "transport": edge.transport,
+                }
+            )
             data["total_duration"] += edge.weight
 
         return Status.OK, data

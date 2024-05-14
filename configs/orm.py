@@ -5,7 +5,6 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Address, Order
-from configs.settings import Status
 
 
 def get_address_by_part(session: Session, part_address: str) -> List[Type[Address]]:

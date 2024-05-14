@@ -15,6 +15,7 @@ def get_routes(session: Session, user: User) -> List[Route]:
             .joinedload(Position.order)
             .joinedload(Order.address)
         )
+        .order_by(Route.execution_date.desc())
     )
     return list(session.execute(query).scalars().all())
 
@@ -40,7 +41,12 @@ def create_route(session: Session, user: User, data: Dict[str, Any]) -> Route:
     route = Route(**data)
     for pos, node in enumerate(path):
         route.positions.append(
-            Position(duration=node["duration"], transport=node["transport"], pos=pos, order_id=node["node"])
+            Position(
+                duration=node["duration"],
+                transport=node["transport"],
+                pos=pos,
+                order_id=node["node"],
+            )
         )
 
     user.routes.append(route)

@@ -5,7 +5,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload, joinedload
 
 from app.models import Product, Order
-from configs.settings import Category, Status
+from app.types import Category, Status
 
 
 def create(session: Session, order_dict: dict) -> Order:

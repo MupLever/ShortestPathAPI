@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from api_v1.executors.schemas import ExecutorCreate
 from app.models import Executor
-from configs.settings import Category
+from app.types import Category
 
 
 def create(session: Session, executor: ExecutorCreate) -> Executor:
@@ -16,11 +16,7 @@ def create(session: Session, executor: ExecutorCreate) -> Executor:
 
 
 def get_executors(session: Session) -> List[Type[Executor]]:
-    return list(
-        session.query(Executor)
-        .where(Executor.is_active)
-        .all()
-    )
+    return list(session.query(Executor).where(Executor.is_active).all())
 
 
 def get_executors_by_filters(

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from configs.settings import Category
+from app.types import Category
 
 router = APIRouter(tags=["Categories"], prefix="/api/v1/shortest_path/categories")
 

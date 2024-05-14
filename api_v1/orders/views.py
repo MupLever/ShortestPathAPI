@@ -11,7 +11,7 @@ from api_v1.orders import crud
 from api_v1.orders.schemas import OrderCreate
 from app.models import User
 from configs.database import get_session_dependency
-from configs.settings import Category
+from app.types import Category
 
 router = APIRouter(tags=["Orders"], prefix="/api/v1/shortest_path/orders")
 

@@ -63,7 +63,7 @@ def route_task_create(info: dict, user_id: int) -> None:
     orders = get_orders_by_order_id_list(session, info.pop("orders_ids"))
     coordinates_dict = external_api.get_coordinates(orders)
     edges_list = external_api.get_distances(coordinates_dict, info.pop("category"))
-    data = graph_api.get_min_hamiltonian_cycle(len(orders), edges_list)
+    data = graph_api.get_min_hamiltonian_cycle(edges_list)
     data.update(info)
 
     crud.create_route(session, user, data)
