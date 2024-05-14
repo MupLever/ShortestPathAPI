@@ -1,5 +1,3 @@
-import enum
-
 from datetime import datetime
 from typing import Optional, List
 
@@ -11,11 +9,7 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-
-class Status(enum.Enum):
-    pending = "pending"
-    done = "done"
-    canceled = "canceled"
+from app.types import Role, Status, Category, Transport
 
 
 def model_dump(row):
@@ -27,18 +21,6 @@ class Base(DeclarativeBase):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    repr_cols_num = 3
-    repr_cols = tuple()
-
-    def __repr__(self):
-        """Relationships не используются в repr(), т.к. могут вести к неожиданным подгрузкам"""
-        cols = []
-        for idx, col in enumerate(self.__table__.columns.keys()):
-            if col in self.repr_cols or idx < self.repr_cols_num:
-                cols.append(f"{col}={getattr(self, col)}")
-
-        return f"<{self.__class__.__name__} {', '.join(cols)}>"
-
 
 class User(Base):
     __tablename__ = "users"
@@ -47,6 +29,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(server_default=text("True"))
     password: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[Role] = mapped_column(
+        nullable=False, server_default=Role.dispatcher.name
+    )
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
     )
@@ -65,29 +50,24 @@ class Address(Base):
     street: Mapped[str] = mapped_column(nullable=False)
     house_number: Mapped[str] = mapped_column(nullable=False)
 
-    routes: Mapped[List["Route"]] = relationship(
-        back_populates="addresses", secondary="positions"
-    )
-    positions: Mapped[List["Position"]] = relationship(back_populates="address")
+    # routes: Mapped[List["Route"]] = relationship(
+    #     back_populates="addresses", secondary="positions"
+    # )
 
-
-class Geocoordinates(Base):
-    __tablename__ = "geocoordinates"
-
-    latitude: Mapped[float] = mapped_column()
-    longitude: Mapped[float] = mapped_column()
-    address_id: Mapped[int] = mapped_column(
-        ForeignKey("addresses.id", ondelete="CASCADE")
-    )
+    orders: Mapped[List["Order"]] = relationship(back_populates="address")
+    # positions: Mapped[List["Position"]] = relationship(back_populates="address")
 
 
 class Route(Base):
     __tablename__ = "routes"
 
     total_duration: Mapped[int] = mapped_column(nullable=False)
-    executor: Mapped[str] = mapped_column(nullable=False)
     execution_date: Mapped[datetime] = mapped_column(nullable=False)
+
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
+    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
+
     created_at: Mapped[datetime] = mapped_column(
         server_default=text("TIMEZONE('utc', now())")
     )
@@ -96,11 +76,9 @@ class Route(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="routes")
-
+    executor: Mapped["Executor"] = relationship(back_populates="routes")
+    address: Mapped["Address"] = relationship()
     positions: Mapped[List["Position"]] = relationship(back_populates="route")
-    addresses: Mapped[List["Address"]] = relationship(
-        back_populates="routes", secondary="positions"
-    )
 
 
 class Position(Base):
@@ -108,13 +86,74 @@ class Position(Base):
 
     duration: Mapped[int] = mapped_column(nullable=False)
     pos: Mapped[int] = mapped_column(nullable=False)
-    status: Mapped[Status] = mapped_column(server_default=text("'pending'"))
-    address_id: Mapped[int] = mapped_column(
-        ForeignKey("addresses.id", ondelete="CASCADE")
-    )
-    route_id: Mapped[int] = mapped_column(
-        ForeignKey("routes.id", ondelete="CASCADE")
-    )
+    transport: Mapped[Transport] = mapped_column(nullable=False)
+
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
+    route_id: Mapped[int] = mapped_column(ForeignKey("routes.id", ondelete="CASCADE"))
 
     route: Mapped["Route"] = relationship(back_populates="positions")
-    address: Mapped["Address"] = relationship(back_populates="positions")
+    order: Mapped["Order"] = relationship(back_populates="position")
+
+
+class Executor(Base):
+    __tablename__ = "executors"
+
+    fullname: Mapped[str] = mapped_column(nullable=False)
+    age: Mapped[int] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False, unique=True)
+    passport: Mapped[str] = mapped_column(nullable=False, unique=True)
+    category: Mapped[Category] = mapped_column(nullable=False)
+    workload: Mapped[bool] = mapped_column(nullable=False, server_default="False")
+    is_active: Mapped[bool] = mapped_column(nullable=False, server_default="True")
+
+    routes: Mapped[List["Route"]] = relationship(back_populates="executor")
+
+
+class Workload(Base):
+    __tablename__ = "workloads"
+
+    executor_id: Mapped[int] = mapped_column(ForeignKey("executors.id"))
+    date: Mapped[datetime] = mapped_column(nullable=False)
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    number: Mapped[int] = mapped_column(nullable=False, unique=True)
+    client: Mapped[str] = mapped_column(nullable=False)
+    phone_number: Mapped[str] = mapped_column(nullable=False, unique=True)
+    expected_date: Mapped[datetime] = mapped_column(nullable=False)
+    status: Mapped[Status] = mapped_column(server_default=Status.pending.name)
+
+    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
+
+    position: Mapped["Position"] = relationship(back_populates="order")
+    products: Mapped[List["Product"]] = relationship(back_populates="order")
+    address: Mapped["Address"] = relationship(back_populates="orders")
+
+
+class Product(Base):
+    __tablename__ = "products"
+
+    name: Mapped[str] = mapped_column(nullable=False)
+    category: Mapped[Category] = mapped_column(nullable=False)
+    count: Mapped[int] = mapped_column(nullable=False)
+    weight: Mapped[float] = mapped_column(nullable=False)
+    # volume: Mapped[float] = mapped_column(nullable=False)
+    article_number: Mapped[int] = mapped_column(nullable=False)
+    hazard_class: Mapped[int] = mapped_column(nullable=False)
+    expiration_date: Mapped[datetime] = mapped_column(nullable=False)
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
+
+    order: Mapped["Order"] = relationship(back_populates="products")
+
+
+# class Geocoordinates(Base):
+#     __tablename__ = "geocoordinates"
+#
+#     latitude: Mapped[float] = mapped_column()
+#     longitude: Mapped[float] = mapped_column()
+#
+#     address_id: Mapped[int] = mapped_column(
+#         ForeignKey("addresses.id", ondelete="CASCADE")
+#     )

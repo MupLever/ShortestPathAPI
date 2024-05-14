@@ -7,48 +7,16 @@ for searching for a Hamiltonian cycle
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Iterable, Tuple, Set, Optional
+from typing import Any, Iterable, Tuple, Set, Iterator
 from queue import Queue
 from random import choice
+
+from app.types import Transport
 
 
 class Status(Enum):
     OK: int = 0
     ERROR: int = 1
-
-
-class EdgesList:
-    class Edge:
-        def __init__(self, node_from: Any, node_to: Any, weight: int):
-            self.node_from = node_from
-            self.node_to = node_to
-            self.weight = weight
-
-        def __radd__(self, other):
-            return self.weight + other
-
-    def __init__(self):
-        self.edges_list: list = []
-
-    def __iter__(self):
-        return iter(self.edges_list)
-
-    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
-        edge = self.Edge(value_from, value_to, weight)
-        self.edges_list.append(edge)
-
-    def sort(self) -> None:
-        self.edges_list.sort(key=lambda edge: edge.weight)
-
-    def sum(self):
-        return sum(self.edges_list)
-
-    def to_hamiltonian_graph(self) -> HamiltonianGraph:
-        graph = HamiltonianGraph()
-        for edge in self.edges_list:
-            graph.add_edge(edge.node_from, edge.node_to, edge.weight)
-
-        return graph
 
 
 class MatrixGraph:
@@ -78,6 +46,56 @@ class MatrixGraph:
     def traverse(self) -> None:
         for row in self.matrix:
             print(row, end="\n")
+
+
+class EdgesList:
+    class Edge:
+        def __init__(
+            self, node_from: Any, node_to: Any, weight: int, transport: Transport
+        ) -> None:
+            self.node_from = node_from
+            self.node_to = node_to
+            self.weight = weight
+            self.transport = transport
+
+        def __radd__(self, other) -> int:
+            return self.weight + other
+
+        @property
+        def tuple(self) -> tuple:
+            return self.node_from, self.node_to, self.weight, self.transport
+
+    def __init__(self) -> None:
+        self.edges_list: list = []
+        self._nodes = set()
+
+    @property
+    def n_vertex(self) -> int:
+        return len(self._nodes)
+
+    def __iter__(self) -> Iterator:
+        return iter(self.edges_list)
+
+    def add_edge(
+        self, value_from: Any, value_to: Any, weight: int, transport: Transport
+    ) -> None:
+        self._nodes.update({value_from, value_to})
+
+        edge = self.Edge(value_from, value_to, weight, transport)
+        self.edges_list.append(edge)
+
+    def sort(self, desc: bool = False) -> None:
+        self.edges_list.sort(key=lambda edge: -edge.weight if desc else edge.weight)
+
+    def sum(self) -> int:
+        return sum(self.edges_list)
+
+    def to_hamiltonian_graph(self) -> HamiltonianGraph:
+        graph = HamiltonianGraph()
+        for edge in self.edges_list:
+            graph.add_edge(edge.node_from, edge.node_to, edge.weight, edge.transport)
+
+        return graph
 
 
 class HashTableGraph:
@@ -112,9 +130,10 @@ class HashTableGraph:
     class Edge:
         """edge class storing the incident node"""
 
-        def __init__(self, incident_node, weight: int) -> None:
+        def __init__(self, incident_node, weight: int, transport: Transport) -> None:
             self.incident_node = incident_node
             self.weight = weight
+            self.transport = transport
 
         def __lt__(self, other) -> bool:
             return self.weight < other.weight
@@ -127,10 +146,10 @@ class HashTableGraph:
         self.n_vertex = 0
 
     def add_from_edges_list(self, edges_list: Iterable[Tuple[Any, Any, int]]) -> None:
-        for from_, to_, weight in edges_list:
+        for from_, to_, weight, transport in edges_list:
             self.add_or_get_node(from_)
             self.add_or_get_node(to_)
-            self.add_edge(from_, to_, weight)
+            self.add_edge(from_, to_, weight, transport)
 
     def add_or_get_node(self, value: Any) -> Node:
         """adding and returning a node"""
@@ -141,11 +160,13 @@ class HashTableGraph:
 
         return self.graph[value]
 
-    def add_edge(self, value_from: Any, value_to: Any, weight: int) -> None:
+    def add_edge(
+        self, value_from: Any, value_to: Any, weight: int, transport: Transport
+    ) -> None:
         node_from = self.add_or_get_node(value_from)
         node_to = self.add_or_get_node(value_to)
 
-        edge = self.Edge(node_to, weight)
+        edge = self.Edge(node_to, weight, transport)
         node_from.edges.add(edge)
         node_to.parents[node_from] = edge
 
@@ -255,14 +276,14 @@ class HamiltonianGraph(HashTableGraph):
         return True
 
     @staticmethod
-    def _get_weight_between(node, adjacent_node) -> Optional[int]:
+    def _get_edge_between(node, adjacent_node):
         """return weight between adjacent nodes"""
 
         if adjacent_node in node.parents:
-            return node.parents[adjacent_node].weight
+            return node.parents[adjacent_node]
 
         if node in adjacent_node.parents:
-            return adjacent_node.parents[node].weight
+            return adjacent_node.parents[node]
 
         return None
 
@@ -281,7 +302,9 @@ class HamiltonianGraph(HashTableGraph):
 
         return edge_to_nearest_node.incident_node
 
-    def get_hamiltonian_cycle(self, *, start_value: Any = None) -> (int, dict):
+    def get_hamiltonian_cycle(
+        self, *, chain: bool = False, start_value: Any = None
+    ) -> (int, dict):
         """finds a suboptimal Hamiltonian cycle"""
 
         data = {"path": [], "total_duration": 0}
@@ -297,7 +320,9 @@ class HamiltonianGraph(HashTableGraph):
                 f"The graph doesn't contain vertices with this value={start_value}"
             )
 
-        data["path"].append({"address": start_node.value, "duration": 0})
+        data["path"].append(
+            {"node": start_node.value, "duration": 0, "transport": Transport.pd.value}
+        )
 
         cur_node = start_node
         passed = {cur_node}
@@ -307,20 +332,33 @@ class HamiltonianGraph(HashTableGraph):
             if nearest_node is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            duration = self._get_weight_between(cur_node, nearest_node)
-            if duration is None:
+            edge = self._get_edge_between(cur_node, nearest_node)
+            if edge is None:
                 return Status.ERROR, {"path": [], "total_duration": 0}
 
-            data["path"].append({"address": nearest_node.value, "duration": duration})
-            data["total_duration"] += duration
+            data["path"].append(
+                {
+                    "node": nearest_node.value,
+                    "duration": edge.weight,
+                    "transport": edge.transport,
+                }
+            )
+            data["total_duration"] += edge.weight
             passed.add(nearest_node)
             cur_node = nearest_node
 
-        duration = self._get_weight_between(start_node, cur_node)
-        if duration is None:
-            return Status.ERROR, {"path": [], "total_duration": 0}
+        if not chain:
+            edge = self._get_edge_between(start_node, cur_node)
+            if edge is None:
+                return Status.ERROR, {"path": [], "total_duration": 0}
 
-        data["path"].append({"address": start_node.value, "duration": duration})
-        data["total_duration"] += duration
+            data["path"].append(
+                {
+                    "node": start_node.value,
+                    "duration": edge.weight,
+                    "transport": edge.transport,
+                }
+            )
+            data["total_duration"] += edge.weight
 
         return Status.OK, data

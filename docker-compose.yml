@@ -26,14 +26,14 @@ services:
   celery:
     build: .
     container_name: celery
-    command: ["celery.sh", "celery"]
+    command: 'celery --app=tasks.route:celery worker --loglevel=INFO'
     depends_on:
       - redis
   
   flower:
     build: .
     container_name: flower
-    command: ["celery.sh", "flower"]
+    command: 'celery --app=tasks.route:celery flower'
     ports:
       - '5555:5555'
     depends_on:

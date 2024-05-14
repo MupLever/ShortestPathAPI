@@ -1,4 +1,5 @@
 from typing import List, Type
+
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 
@@ -7,13 +8,12 @@ from app.models import Address
 
 def get_address_by_part(session: Session, part_address: str) -> List[Type[Address]]:
     columns = (Address.district, Address.city, Address.street, Address.house_number)
-    stmt = select(Address.id, *columns)
-    values = part_address.split(', ')
-    conditions = [column.startswith(value) for column in columns for value in values]
-    stmt = stmt.where(or_(*conditions))
+    values = part_address.split(" ")
+    filters = [column.startswith(value) for column in columns for value in values]
 
-    addresses = session.query(Address).from_statement(stmt).all()[:6]
-    return addresses
+    stmt = select(Address.id, *columns).where(or_(*filters)).limit(6)
+
+    return session.query(Address).from_statement(stmt).all()
 
 
 def get_addresses_by_id_list(

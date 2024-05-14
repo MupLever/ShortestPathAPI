@@ -1,7 +1,9 @@
+from typing import Any
+
 from utils.graph import HamiltonianGraph, Status, EdgesList
 
 
-def get_min_hamiltonian_cycle(edges_list: EdgesList) -> dict:
+def get_min_hamiltonian_cycle(edges_list: EdgesList, start_value: Any = None) -> dict:
     edges_list.sort()
 
     graph = HamiltonianGraph()
@@ -9,8 +11,12 @@ def get_min_hamiltonian_cycle(edges_list: EdgesList) -> dict:
     total_data = {}
 
     for edge in edges_list:
-        graph.add_edge(edge.node_from, edge.node_to, edge.weight)
-        status, data = graph.get_hamiltonian_cycle()
+        graph.add_edge(*edge.tuple)
+
+        if graph.n_vertex < edges_list.n_vertex:
+            continue
+
+        status, data = graph.get_hamiltonian_cycle(chain=True, start_value=start_value)
 
         if status != Status.OK:
             continue
