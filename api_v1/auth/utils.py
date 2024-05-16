@@ -27,7 +27,7 @@ def get_current_user(
     except InvalidTokenError:
         raise unauthed_exception
 
-    if user := crud.get_user_by_username(session, payload["username"]):
+    if user := crud.get_user_by_email(session, payload["email"]):
         return user
 
     raise unauthed_exception

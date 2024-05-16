@@ -8,6 +8,7 @@ class Role(enum.Enum):
 
 class Status(enum.Enum):
     pending = "pending"
+    in_progress = "in progress"
     done = "done"
     canceled = "canceled"
 

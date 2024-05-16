@@ -49,7 +49,7 @@ async def create_shortest_path(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="the number of vertices is less than 3",
         )
-
+    info.category = info.category.value
     # route_task.create.delay(info.model_dump(), user.id)
     route_task_create(info.model_dump(), user.id)
 

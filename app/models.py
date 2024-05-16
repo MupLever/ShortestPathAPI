@@ -105,6 +105,7 @@ class Executor(Base):
     category: Mapped[Category] = mapped_column(nullable=False)
     workload: Mapped[bool] = mapped_column(nullable=False, server_default="False")
     is_active: Mapped[bool] = mapped_column(nullable=False, server_default="True")
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), server_default='1')
 
     routes: Mapped[List["Route"]] = relationship(back_populates="executor")
 
@@ -121,10 +122,11 @@ class Order(Base):
 
     number: Mapped[int] = mapped_column(nullable=False, unique=True)
     client: Mapped[str] = mapped_column(nullable=False)
-    phone_number: Mapped[str] = mapped_column(nullable=False, unique=True)
+    phone_number: Mapped[str] = mapped_column(nullable=False)
     expected_date: Mapped[datetime] = mapped_column(nullable=False)
     status: Mapped[Status] = mapped_column(server_default=Status.pending.name)
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), server_default='1')
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"))
 
     position: Mapped["Position"] = relationship(back_populates="order")

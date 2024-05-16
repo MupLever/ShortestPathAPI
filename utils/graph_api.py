@@ -4,7 +4,7 @@ from utils.graph import HamiltonianGraph, Status, EdgesList
 
 
 def get_min_hamiltonian_cycle(edges_list: EdgesList, start_value: Any = None) -> dict:
-    edges_list.sort()
+    edges_list.sort(desc=True)
 
     graph = HamiltonianGraph()
     min_duration = edges_list.sum()

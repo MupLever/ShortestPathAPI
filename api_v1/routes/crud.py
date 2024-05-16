@@ -15,7 +15,7 @@ def get_routes(session: Session, user: User) -> List[Route]:
             .joinedload(Position.order)
             .joinedload(Order.address)
         )
-        .order_by(Route.execution_date.desc())
+        .order_by(Route.created_at.desc())
     )
     return list(session.execute(query).scalars().all())
 

@@ -17,31 +17,31 @@ async def get_executors_by_filters(
     all_: bool,
     category: Category = Category.lightweight,
     part_fullname: str = "",
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
     if all_:
-        return crud.get_executors(session)
+        return crud.get_executors(session, user)
 
-    return crud.get_executors_by_filters(session, category, part_fullname)
+    return crud.get_executors_by_filters(session, user, category, part_fullname)
 
 
 @router.post("/", description="")
 async def create_executor(
     executor: ExecutorCreate,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    return crud.create(session, executor)
+    return crud.create(session, user, executor)
 
 
 @router.delete("/{executor_id}/", description="")
 async def dismiss_executor(
     executor_id: int,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    executor = crud.get_executor(session, executor_id)
+    executor = crud.get_executor(session, user, executor_id)
     if not executor:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

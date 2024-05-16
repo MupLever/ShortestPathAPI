@@ -11,7 +11,7 @@ from api_v1.orders import crud
 from api_v1.orders.schemas import OrderCreate
 from app.models import User
 from configs.database import get_session_dependency
-from app.types import Category
+from app.types import Category, Status
 
 router = APIRouter(tags=["Orders"], prefix="/api/v1/shortest_path/orders")
 
@@ -20,26 +20,26 @@ router = APIRouter(tags=["Orders"], prefix="/api/v1/shortest_path/orders")
 async def get_orders(
     date: datetime,
     category: Category,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
-    return crud.get_orders(session, date, category)
+    return crud.get_orders(session, user, date, category)
 
 
 @router.post("/", description="")
 async def create(
     order: OrderCreate,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
     order_dict = order.model_dump()
-    return crud.create(session, order_dict)
+    return crud.create(session, user, order_dict)
 
 
 @router.post("/file/", description="")
 async def create(
     file: UploadFile,
-    # _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: Session = Depends(get_session_dependency),
 ):
     order_dict = (
@@ -50,23 +50,25 @@ async def create(
     )
     if isinstance(order_dict, list):
         for order in order_dict:
-            crud.create(session, order_dict=order)
+            crud.create(session, user, order_dict=order)
     else:
-        crud.create(session, order_dict=order_dict)
+        crud.create(session, user, order_dict=order_dict)
+
     return {"message": "The file was sent successfully"}
 
 
-@router.delete("/{order_id}/", description="")
-async def delete(
-    order_id: int,
-    _: User = Depends(get_current_user),
-    session: Session = Depends(get_session_dependency),
+@router.post("/{order_id}/", description="")
+async def update_status(
+        order_id: int,
+        order_status: Status,
+        user: User = Depends(get_current_user),
+        session: Session = Depends(get_session_dependency)
 ):
-    order = crud.get_order(session, order_id)
+    order = crud.get_order(session, user, order_id)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Executor with {order_id=} not found",
         )
 
-    return crud.delete(session, order)
+    return crud.update_status(session, order, order_status)
